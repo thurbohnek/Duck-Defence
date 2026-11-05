@@ -1,0 +1,21 @@
+# Duck Defense
+
+A rubber-duck arena survivor roguelite in a giant bathtub. Swim around, let your weapons fire automatically, pop waves of grime, collect pearls, level up and evolve your weapons. Survive 12 minutes and defeat the Loofah King.
+
+## Play
+
+Open `index.html` in any modern browser. Everything (graphics, sound, music) is in this single file — no build step, no dependencies.
+
+## Controls
+
+- **Touch:** hold a finger anywhere and drag to steer (the joystick stays where you put your finger down)
+- **Keyboard:** WASD or arrow keys to move, Esc/P to pause, 1/2/3 to pick level-up cards, R to reroll
+
+## Features
+
+- 8 weapons, each with 5 levels and an evolution
+- 9 passive items
+- 7 enemy types and 4 bosses
+- 9 unlockable ducks with their own starting weapon and traits
+- Permanent upgrades bought with rubber chips
+- Water Temperature difficulty levels after your first win
