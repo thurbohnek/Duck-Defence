@@ -131,6 +131,19 @@ h1,h2,h3{margin:0}
 .setrow .lbl small{display:block;font-weight:700;font-size:12px;color:var(--ink2)}
 .tog{min-width:84px;min-height:44px;border:3px solid var(--ink);border-radius:999px;background:#d8cdb9;font-weight:900;box-shadow:0 3px 0 var(--ink);padding:0 12px}
 .tog[aria-pressed="true"]{background:var(--mint)}
+.ctrlbox{padding:6px 0 10px;border-bottom:2px dashed #e2d6c1}
+.ctrlbox>.lbl{font-weight:900;font-size:16px;margin-bottom:8px}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.opt{display:flex;align-items:center;gap:8px;text-align:left;min-height:52px;border:3px solid var(--ink);border-radius:14px;background:#fff;padding:6px 8px;box-shadow:0 3px 0 var(--ink);font-weight:900;font-size:14px;line-height:1.15}
+.opt canvas{width:34px;height:34px;flex:none}
+.opt small{display:block;font-weight:700;font-size:11px;color:var(--ink2)}
+.opt[aria-pressed="true"]{background:var(--duck)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{min-width:44px;min-height:44px;padding:0 12px;border:3px solid var(--ink);border-radius:12px;background:#fff;font-weight:900;box-shadow:0 3px 0 var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--duck)}
+.subrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;flex-wrap:wrap}
+.subrow span{font-weight:900;font-size:14px}
+#safeProbe{position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
 
 /* Level up */
 .lvtitle{text-align:center;color:var(--duck);font-size:clamp(36px,10vw,58px);text-shadow:0 4px 0 var(--ink),3px 0 0 var(--ink),-3px 0 0 var(--ink),0 -3px 0 var(--ink),0 8px 0 var(--ink);margin-bottom:4px}
@@ -215,6 +228,7 @@ h1,h2,h3{margin:0}
     <div id="bossbar" class="hidden"><span id="bossname" class="display"></span><div class="bb"><div id="bossfill"></div></div></div>
   </div>
   <div id="hint"></div>
+  <div id="safeProbe"></div>
   <div id="banner" class="display"></div>
 
   <!-- Title -->
@@ -267,7 +281,7 @@ h1,h2,h3{margin:0}
       <div class="panel">
         <div class="setlist" id="setList"></div>
         <div style="margin-top:16px;text-align:center"><button class="btn pink small" id="bReset">Reset progress</button></div>
-        <p class="muted" style="text-align:center;margin:14px 0 0">Move: drag anywhere, WASD or arrow keys. Pause: Esc or P. Pick cards: 1, 2, 3. Reroll: R.</p>
+        <p class="muted" style="text-align:center;margin:14px 0 0">Move: your chosen touch controls, WASD or arrow keys. Pause: Esc or P. Pick cards: 1, 2, 3. Reroll: R.</p>
       </div>
     </div>
   </div>
@@ -401,7 +415,7 @@ const SAVE_KEY = 'duckDefense.v1';
 function defaultSave(){
   return { v: 1, chips: 0, shop: {}, ducks: { sunny: true }, sel: 'sunny', heat: 0, maxHeat: 0,
     stats: { kills: 0, runs: 0, wins: 0, bestTime: 0, bestLevel: 0, bestKills: 0, bosses: {}, evolved: 0 },
-    settings: { sound: true, music: true, shake: true, nums: true, follow: false } };
+    settings: { sound: true, music: true, shake: true, nums: true, follow: false, ctrl: 'float', ctrlPos: 'center', ctrlSize: 'M' } };
 }
 function mergeInto(base, o){
   if (!o || typeof o !== 'object') return base;
@@ -1563,7 +1577,28 @@ function bossAI(e, dt, dx, dy, d){
 }
 
 /* ------------------------------ PLAYER UPDATE ------------------------------ */
-const input = { jx: 0, jy: 0, jActive: false, ox: 0, oy: 0, cx: 0, cy: 0, pid: -1, keys: {}, mouseX: 0, mouseY: 0, mouseIn: false };
+const input = { jx: 0, jy: 0, jActive: false, ox: 0, oy: 0, cx: 0, cy: 0, pid: -1, keys: {}, mouseX: 0, mouseY: 0, mouseIn: false,
+  tapActive: false, tapHas: false, tapSX: 0, tapSY: 0, tapWX: 0, tapWY: 0,
+  swX: 0, swY: 0, swSX: 0, swSY: 0, swT: 0, swMoved: false,
+  tilt: { has: false, cal: true, b: 0, g: 0, b0: 0, g0: 0 } };
+function ctrlMode(){ return SAVE.settings.ctrl || 'float'; }
+function tiltVec(){
+  const T = input.tilt; if (!T.has) return null;
+  let db = T.b - T.b0, dg = T.g - T.g0;
+  let ang = 0; try { ang = (screen.orientation && screen.orientation.angle) || window.orientation || 0; } catch (e) {}
+  ang = ((ang % 360) + 360) % 360;
+  let x = dg, y = db;
+  if (ang === 90){ x = db; y = -dg; } else if (ang === 270){ x = -db; y = dg; } else if (ang === 180){ x = -dg; y = -db; }
+  const d = Math.hypot(x, y), dead = 2.5, full = 16;
+  if (d < dead) return [0, 0];
+  const m = Math.min(1, (d - dead) / (full - dead));
+  return [x / d * m, y / d * m];
+}
+window.addEventListener('deviceorientation', ev => {
+  if (ev.beta == null || ev.gamma == null) return;
+  const T = input.tilt; T.has = true; T.b = ev.beta; T.g = ev.gamma;
+  if (T.cal){ T.b0 = T.b; T.g0 = T.g; T.cal = false; }
+});
 function updatePlayer(dt){
   const p = player;
   if (!p.alive){ p.deadT += dt; return; }
@@ -1573,6 +1608,14 @@ function updatePlayer(dt){
   if (k.ArrowUp || k.KeyW) my -= 1; if (k.ArrowDown || k.KeyS) my += 1;
   if (mx || my){ const l = Math.hypot(mx, my); mx /= l; my /= l; }
   else if (input.jActive){ mx = input.jx; my = input.jy; }
+  else if (ctrlMode() === 'tap' && input.tapHas){
+    if (input.tapActive){ input.tapWX = (input.tapSX - W / 2) / cam.scale + cam.x; input.tapWY = (input.tapSY - H / 2) / cam.scale + cam.y; }
+    const dx = input.tapWX - p.x, dy = input.tapWY - p.y, d = Math.hypot(dx, dy);
+    if (d > 8){ const f = Math.min(1, (d - 4) / 40); mx = dx / d * f; my = dy / d * f; }
+    else if (!input.tapActive) input.tapHas = false;
+  }
+  else if (ctrlMode() === 'swipe' && (input.swX || input.swY)){ mx = input.swX; my = input.swY; }
+  else if (ctrlMode() === 'tilt' && input.tilt.has){ const v = tiltVec(); mx = v[0]; my = v[1]; }
   else if (SAVE.settings.follow && input.mouseIn){
     const wx = (input.mouseX - W / 2) / cam.scale + cam.x, wy = (input.mouseY - H / 2) / cam.scale + cam.y;
     const dx = wx - p.x, dy = wy - p.y, d = Math.hypot(dx, dy);
@@ -2092,20 +2135,28 @@ function closeChest(){ if (state !== 'chest') return; hide('scrChest'); state = 
 
 /* ------------------------------ HINTS / BANNERS ------------------------------ */
 let hintTimer = 0, bannerTimer = 0, lastPointer = 'mouse';
+const CTRL_HINT = { float: 'Drag anywhere to swim', fixed: 'Use the stick at the bottom to swim', arrows: 'Hold the arrows to swim',
+  tap: 'Tap or hold where you want to swim', swipe: 'Swipe to swim, tap to stop', tilt: 'Tilt your device to swim' };
 try { if (window.matchMedia && matchMedia('(pointer: coarse)').matches) lastPointer = 'touch'; } catch (e) {}
 window.addEventListener('pointerdown', ev => { lastPointer = ev.pointerType === 'mouse' ? 'mouse' : 'touch'; }, true);
-function showHint(text, dur){ const h = $('hint'); h.textContent = text; h.classList.add('show'); hintTimer = dur || 3; }
+function placeHint(){
+  const h = $('hint'), md = ctrlMode();
+  const v = (lastPointer === 'touch' && (md === 'fixed' || md === 'arrows')) ? Math.round(H - (ctrlGeom().cy - ctrlGeom().half) + 14) + 'px' : '';
+  if (h.style.bottom !== v) h.style.bottom = v;
+}
+function showHint(text, dur){ const h = $('hint'); h.textContent = text; placeHint(); h.classList.add('show'); hintTimer = dur || 3; }
 function showBanner(t, sub, warn){
   const b = $('banner'); b.innerHTML = ''; b.appendChild(document.createTextNode(t));
   if (sub){ const s = document.createElement('small'); s.textContent = sub; b.appendChild(s); }
   b.classList.toggle('warn', !!warn); b.classList.add('show'); bannerTimer = 2.4;
 }
 function updateHints(dt){
+  if (hintTimer > 0) placeHint();
   if (hintTimer > 0){ hintTimer -= dt; if (hintTimer <= 0) $('hint').classList.remove('show'); }
   if (bannerTimer > 0){ bannerTimer -= dt; if (bannerTimer <= 0) $('banner').classList.remove('show'); }
   // first-run teaching by playing
   if (run.hintStage === 0){
-    if (run.time > 0.5 && hintTimer <= 0) showHint(lastPointer === 'touch' ? 'Drag anywhere to swim' : 'Swim with WASD or arrow keys (or drag)', 99);
+    if (run.time > 0.5 && hintTimer <= 0) showHint(lastPointer === 'touch' ? CTRL_HINT[ctrlMode()] : 'Swim with WASD or arrow keys', 99);
     if (run.moved > 140){ run.hintStage = 1; hintTimer = 0.01; }
   } else if (run.hintStage === 1){
     if (hintTimer <= 0) showHint('You fire by yourself. Just dodge!', 99);
@@ -2143,6 +2194,7 @@ let qualDPR = 2, slowEma = 1 / 60, slowCool = 0;
 function resize(){
   const r = cv.getBoundingClientRect();
   W = Math.max(1, r.width || window.innerWidth || 800); H = Math.max(1, r.height || window.innerHeight || 600);
+  readSafe();
   DPR = Math.min(qualDPR, window.devicePixelRatio || 1);
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   cam.scale = Math.max(Math.min(W, H) / 640, Math.max(W, H) / 1250);
@@ -2456,14 +2508,71 @@ function drawNums(t){
   }
   ctx.globalAlpha = 1;
 }
-function drawScreenUI(t){
-  // joystick
-  if (input.jActive && state === 'play'){
+function drawArrowShape(x, y, a, s){
+  ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+  ctx.beginPath(); ctx.moveTo(s, 0); ctx.lineTo(-s * 0.6, -s * 0.8); ctx.lineTo(-s * 0.6, s * 0.8); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+function drawControls(t){
+  if (state !== 'play' && state !== 'pause' && state !== 'level' && state !== 'chest') return;
+  const mode = ctrlMode(), touchish = lastPointer === 'touch';
+  if ((mode === 'float' || mode === 'tilt') && input.jActive && state === 'play'){
+    const R = 56;
     ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.arc(input.ox, input.oy, 56, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(input.ox, input.oy, R, 0, TAU); ctx.fill(); ctx.stroke();
     ctx.fillStyle = 'rgba(255,250,241,.9)'; ctx.strokeStyle = INK;
-    ctx.beginPath(); ctx.arc(input.ox + input.jx * 56, input.oy + input.jy * 56, 24, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(input.ox + input.jx * R, input.oy + input.jy * R, 24, 0, TAU); ctx.fill(); ctx.stroke();
   }
+  if (mode === 'fixed' && touchish){
+    const g = ctrlGeom(), R = g.R, act = input.jActive;
+    ctx.fillStyle = act ? 'rgba(255,255,255,.26)' : 'rgba(255,255,255,.16)'; ctx.strokeStyle = 'rgba(255,255,255,' + (act ? .8 : .5) + ')'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(g.cx, g.cy, R, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.45)';
+    for (let k = 0; k < 4; k++){ const a = k * TAU / 4; drawArrowShape(g.cx + Math.cos(a) * R * 0.78, g.cy + Math.sin(a) * R * 0.78, a, R * 0.09); }
+    ctx.globalAlpha = act ? 0.95 : 0.7; ctx.fillStyle = '#fffaf1'; ctx.strokeStyle = INK; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(g.cx + input.jx * R, g.cy + input.jy * R, R * 0.42, 0, TAU); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 1;
+  }
+  if (mode === 'arrows' && touchish){
+    const g = ctrlGeom(), b = g.btn, gap = b * 0.08;
+    const dirs = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+    for (let k = 0; k < 4; k++){
+      const d = dirs[k], x = g.cx + d[0] * (b + gap), y = g.cy + d[1] * (b + gap);
+      const on = input.jActive && (d[0] ? input.jx * d[0] > 0.3 : input.jy * d[1] > 0.3);
+      ctx.fillStyle = on ? 'rgba(255,210,63,.95)' : 'rgba(255,250,241,.55)'; ctx.strokeStyle = on ? INK : 'rgba(31,51,80,.55)'; ctx.lineWidth = 3;
+      rrect(ctx, x - b / 2, y - b / 2, b, b, b * 0.22); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = on ? INK : 'rgba(31,51,80,.7)'; drawArrowShape(x, y, Math.atan2(d[1], d[0]), b * 0.24);
+    }
+    ctx.fillStyle = 'rgba(255,250,241,.3)'; ctx.beginPath(); ctx.arc(g.cx, g.cy, b * 0.22, 0, TAU); ctx.fill();
+  }
+  if (mode === 'tap' && input.tapHas){
+    const sx = (input.tapWX - cam.x) * cam.scale + W / 2, sy = (input.tapWY - cam.y) * cam.scale + H / 2;
+    const k = (t * 1.6) % 1;
+    ctx.strokeStyle = 'rgba(255,255,255,' + (0.9 - k * 0.8) + ')'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.ellipse(sx, sy, 10 + k * 18, (10 + k * 18) * 0.55, 0, 0, TAU); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.beginPath(); ctx.ellipse(sx, sy, 6, 3.5, 0, 0, TAU); ctx.fill();
+  }
+  if (mode === 'swipe' && (input.swX || input.swY) && player){
+    const sx = (player.x - cam.x) * cam.scale + W / 2, sy = (player.y - cam.y) * cam.scale + H / 2;
+    const a = Math.atan2(input.swY, input.swX), r = player.r * cam.scale + 22;
+    ctx.fillStyle = 'rgba(255,255,255,.75)'; drawArrowShape(sx + Math.cos(a) * r, sy + Math.sin(a) * r, a, 9);
+  }
+}
+let safeIn = { t: 0, r: 0, b: 0, l: 0 };
+function readSafe(){
+  try { const cs = getComputedStyle($('safeProbe')); safeIn = { t: parseFloat(cs.paddingTop) || 0, r: parseFloat(cs.paddingRight) || 0, b: parseFloat(cs.paddingBottom) || 0, l: parseFloat(cs.paddingLeft) || 0 }; } catch (e) {}
+}
+function ctrlGeom(){
+  const s = { S: 0.8, M: 1, L: 1.25 }[SAVE.settings.ctrlSize] || 1;
+  const mode = ctrlMode();
+  const R = 60 * s, btn = 52 * s;
+  const half = mode === 'arrows' ? btn * 1.58 : R;
+  const pos = SAVE.settings.ctrlPos, m = 22;
+  const cx = pos === 'left' ? m + safeIn.l + half : pos === 'right' ? W - m - safeIn.r - half : W / 2;
+  const cy = H - safeIn.b - 26 - half;
+  return { cx, cy, R, btn, half };
+}
+function drawScreenUI(t){
+  drawControls(t);
   // off-screen boss arrows
   for (const b of run.bosses){
     if (b.dead) continue;
@@ -2577,6 +2686,7 @@ function goTitle(){
   try { $('bPlay').focus({ preventScroll: true }); } catch (e) {}
 }
 function startRun(){
+  input.swX = input.swY = 0; input.tapHas = false; input.tilt.cal = true;
   newRun(SAVE.sel);
   state = 'play'; only(null); $('hud').classList.remove('hidden');
   for (const k in hudCache) delete hudCache[k];
@@ -2597,7 +2707,7 @@ function pauseGame(){
   show('scrPause');
   try { $('bResume').focus({ preventScroll: true }); } catch (e) {}
 }
-function resumeGame(){ if (state !== 'pause') return; hide('scrPause'); state = 'play'; lastT = 0; Snd.resume(); }
+function resumeGame(){ if (state !== 'pause') return; hide('scrPause'); state = 'play'; lastT = 0; Snd.resume(); input.tilt.cal = true; }
 
 function endRun(won){
   if (run.over) return;
@@ -2697,8 +2807,81 @@ const SETTINGS = [
   ['nums', 'Damage numbers', ''],
   ['follow', 'Mouse steering', 'Duck swims toward the mouse pointer']
 ];
+const CTRL_MODES = [
+  ['float', 'Floating stick', 'Drag anywhere'],
+  ['fixed', 'Fixed stick', 'Stick at the bottom'],
+  ['arrows', 'Arrow buttons', 'Arrow pad at the bottom'],
+  ['tap', 'Tap to swim', 'Tap where to go'],
+  ['swipe', 'Swipe', 'Swipe to steer, tap to stop'],
+  ['tilt', 'Tilt', 'Tilt your device']
+];
+function ctrlIcon(id, sz){
+  const c = mkCanvas(sz * 2, sz * 2); const g = c.getContext('2d'); g.scale(2, 2);
+  const m = sz / 2; g.lineWidth = 2.2; g.strokeStyle = INK; g.fillStyle = INK; g.lineCap = 'round'; g.lineJoin = 'round';
+  const arrow = (x, y, a, s) => { g.save(); g.translate(x, y); g.rotate(a); g.beginPath(); g.moveTo(s, 0); g.lineTo(-s * .6, -s * .8); g.lineTo(-s * .6, s * .8); g.closePath(); g.fill(); g.restore(); };
+  if (id === 'float' || id === 'fixed'){
+    g.beginPath(); g.arc(m, m, sz * 0.4, 0, TAU); g.stroke();
+    g.fillStyle = id === 'fixed' ? '#8fe0f0' : '#ffd23f'; g.beginPath(); g.arc(m + (id === 'float' ? sz * .12 : 0), m - (id === 'float' ? sz * .1 : 0), sz * 0.17, 0, TAU); g.fill(); g.stroke();
+    if (id === 'fixed'){ g.beginPath(); g.moveTo(sz * .1, sz * .96); g.lineTo(sz * .9, sz * .96); g.stroke(); }
+  } else if (id === 'arrows'){
+    const b = sz * 0.26;
+    [[1, 0], [0, 1], [-1, 0], [0, -1]].forEach(d => { g.fillStyle = '#fff'; rrect(g, m + d[0] * b * 1.05 - b / 2, m + d[1] * b * 1.05 - b / 2, b, b, 3); g.fill(); g.stroke(); g.fillStyle = INK; arrow(m + d[0] * b * 1.05, m + d[1] * b * 1.05, Math.atan2(d[1], d[0]), b * .28); });
+  } else if (id === 'tap'){
+    g.beginPath(); g.ellipse(m + sz * .1, m + sz * .2, sz * .3, sz * .14, 0, 0, TAU); g.stroke();
+    g.beginPath(); g.ellipse(m + sz * .1, m + sz * .2, sz * .1, sz * .05, 0, 0, TAU); g.fill();
+    g.setLineDash([2, 3]); g.beginPath(); g.moveTo(sz * .12, sz * .12); g.lineTo(m + sz * .05, m + sz * .12); g.stroke(); g.setLineDash([]);
+  } else if (id === 'swipe'){
+    g.beginPath(); g.moveTo(sz * .14, sz * .7); g.quadraticCurveTo(m, sz * .7, sz * .78, sz * .3); g.stroke(); arrow(sz * .8, sz * .28, -0.75, sz * .14);
+  } else if (id === 'tilt'){
+    g.save(); g.translate(m, m); g.rotate(-0.35); g.fillStyle = '#fff'; rrect(g, -sz * .2, -sz * .36, sz * .4, sz * .72, 5); g.fill(); g.stroke(); g.restore();
+    g.beginPath(); g.arc(m, m, sz * .46, -2.6, -1.9); g.stroke(); g.beginPath(); g.arc(m, m, sz * .46, 0.55, 1.2); g.stroke();
+  }
+  return c;
+}
+function chooseCtrl(id){
+  if (id === 'tilt'){
+    input.tilt.cal = true;
+    try {
+      const D = window.DeviceOrientationEvent;
+      if (D && typeof D.requestPermission === 'function') D.requestPermission().then(r => { if (r !== 'granted') showHint('Tilt needs motion access. You can still drag to swim.', 4); }).catch(() => {});
+    } catch (e) {}
+    setTimeout(() => { if (!input.tilt.has) showHint('No tilt sensor found here. Dragging still works.', 4); }, 1500);
+  }
+  SAVE.settings.ctrl = id; input.swX = input.swY = 0; input.tapHas = false; persist(); Snd.play('click');
+}
+function renderControls(box){
+  const wrap = document.createElement('div'); wrap.className = 'ctrlbox';
+  const l = document.createElement('div'); l.className = 'lbl'; l.textContent = 'Touch controls'; wrap.appendChild(l);
+  const grid = document.createElement('div'); grid.className = 'opts'; wrap.appendChild(grid);
+  for (const [id, name, sub] of CTRL_MODES){
+    const b = document.createElement('button'); b.className = 'opt'; b.setAttribute('aria-pressed', ctrlMode() === id ? 'true' : 'false');
+    b.appendChild(ctrlIcon(id, 34));
+    const tx = document.createElement('div'); tx.textContent = name; const sm = document.createElement('small'); sm.textContent = sub; tx.appendChild(sm); b.appendChild(tx);
+    b.addEventListener('click', () => { chooseCtrl(id); renderSettings(box, box.dataset.compact === '1'); });
+    grid.appendChild(b);
+  }
+  const mode = ctrlMode();
+  if (mode === 'fixed' || mode === 'arrows'){
+    const seg = (label, key, vals) => {
+      const r = document.createElement('div'); r.className = 'subrow';
+      const sp = document.createElement('span'); sp.textContent = label; r.appendChild(sp);
+      const sg = document.createElement('div'); sg.className = 'seg';
+      for (const [v, t] of vals){
+        const b = document.createElement('button'); b.textContent = t; b.setAttribute('aria-pressed', SAVE.settings[key] === v ? 'true' : 'false');
+        b.setAttribute('aria-label', label + ' ' + t);
+        b.addEventListener('click', () => { SAVE.settings[key] = v; persist(); Snd.play('click'); renderSettings(box, box.dataset.compact === '1'); });
+        sg.appendChild(b);
+      }
+      r.appendChild(sg); wrap.appendChild(r);
+    };
+    seg('Position', 'ctrlPos', [['left', 'Left'], ['center', 'Middle'], ['right', 'Right']]);
+    seg('Size', 'ctrlSize', [['S', 'S'], ['M', 'M'], ['L', 'L']]);
+  }
+  box.appendChild(wrap);
+}
 function renderSettings(box, compact){
-  box.innerHTML = '';
+  box.innerHTML = ''; box.dataset.compact = compact ? '1' : '0';
+  renderControls(box);
   for (const [k, label, sub] of SETTINGS){
     if (compact && (k === 'follow' || k === 'nums')) continue;
     const r = document.createElement('div'); r.className = 'setrow';
@@ -2724,23 +2907,58 @@ function closeConfirm(yes){
 
 /* ------------------------------ INPUT ------------------------------ */
 const gameEl = $('game');
-function releaseInput(){ input.keys = {}; input.jActive = false; input.pid = -1; input.jx = input.jy = 0; }
+function releaseInput(){ input.keys = {}; input.jActive = false; input.pid = -1; input.jx = input.jy = 0; input.tapActive = false; }
+function stickFrom(ev, R){
+  const dx = ev.clientX - input.ox, dy = ev.clientY - input.oy, d = Math.hypot(dx, dy);
+  if (d < 6){ input.jx = 0; input.jy = 0; }
+  else { const m = Math.min(d, R) / R; input.jx = dx / d * m; input.jy = dy / d * m; }
+}
+function arrowsFrom(ev){
+  const g = ctrlGeom(); const dx = ev.clientX - g.cx, dy = ev.clientY - g.cy;
+  if (Math.hypot(dx, dy) < g.btn * 0.3){ input.jx = 0; input.jy = 0; return; }
+  const a = Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) * (Math.PI / 4);
+  input.jx = Math.cos(a); input.jy = Math.sin(a);
+  if (Math.abs(input.jx) < 1e-6) input.jx = 0; if (Math.abs(input.jy) < 1e-6) input.jy = 0;
+}
 gameEl.addEventListener('pointerdown', ev => {
   Snd.init(); lastPointer = ev.pointerType === 'touch' || ev.pointerType === 'pen' ? 'touch' : 'mouse';
   if (state !== 'play' || input.pid !== -1) return;
   if (ev.pointerType === 'mouse' && SAVE.settings.follow) return;
-  input.pid = ev.pointerId; input.jActive = true; input.ox = ev.clientX; input.oy = ev.clientY; input.jx = 0; input.jy = 0;
+  const mode = ctrlMode();
+  if (mode === 'fixed' || mode === 'arrows'){
+    const g = ctrlGeom();
+    if (Math.abs(ev.clientX - g.cx) > g.half * 1.9 || Math.abs(ev.clientY - g.cy) > g.half * 1.9) return;
+    input.pid = ev.pointerId; input.jActive = true; input.ox = g.cx; input.oy = g.cy;
+    if (mode === 'fixed') stickFrom(ev, g.R); else arrowsFrom(ev);
+  } else if (mode === 'tap'){
+    input.pid = ev.pointerId; input.tapActive = true; input.tapHas = true; input.tapSX = ev.clientX; input.tapSY = ev.clientY;
+    input.tapWX = (ev.clientX - W / 2) / cam.scale + cam.x; input.tapWY = (ev.clientY - H / 2) / cam.scale + cam.y;
+  } else if (mode === 'swipe'){
+    input.pid = ev.pointerId; input.swSX = ev.clientX; input.swSY = ev.clientY; input.swT = performance.now(); input.swMoved = false;
+  } else {
+    input.pid = ev.pointerId; input.jActive = true; input.ox = ev.clientX; input.oy = ev.clientY; input.jx = 0; input.jy = 0;
+  }
   try { gameEl.setPointerCapture(ev.pointerId); } catch (e) {}
   ev.preventDefault();
 });
 gameEl.addEventListener('pointermove', ev => {
   input.mouseX = ev.clientX; input.mouseY = ev.clientY; input.mouseIn = ev.pointerType === 'mouse';
   if (ev.pointerId !== input.pid) return;
-  let dx = ev.clientX - input.ox, dy = ev.clientY - input.oy; const d = Math.hypot(dx, dy); const R = 56;
-  if (d < 6){ input.jx = 0; input.jy = 0; }
-  else { const m = Math.min(d, R) / R; input.jx = dx / d * m; input.jy = dy / d * m; }
+  const mode = ctrlMode();
+  if (mode === 'fixed') stickFrom(ev, ctrlGeom().R);
+  else if (mode === 'arrows') arrowsFrom(ev);
+  else if (mode === 'tap'){ input.tapSX = ev.clientX; input.tapSY = ev.clientY; }
+  else if (mode === 'swipe'){
+    const dx = ev.clientX - input.swSX, dy = ev.clientY - input.swSY, d = Math.hypot(dx, dy);
+    if (d > 22){ input.swX = dx / d; input.swY = dy / d; input.swSX = ev.clientX; input.swSY = ev.clientY; input.swMoved = true; }
+  }
+  else stickFrom(ev, 56);
 });
-function endPointer(ev){ if (ev.pointerId === input.pid){ input.pid = -1; input.jActive = false; input.jx = input.jy = 0; } }
+function endPointer(ev){
+  if (ev.pointerId !== input.pid) return;
+  if (ctrlMode() === 'swipe' && !input.swMoved && ev.type === 'pointerup' && performance.now() - input.swT < 350){ input.swX = 0; input.swY = 0; }
+  input.pid = -1; input.jActive = false; input.jx = input.jy = 0; input.tapActive = false;
+}
 gameEl.addEventListener('pointerup', endPointer);
 gameEl.addEventListener('pointercancel', endPointer);
 gameEl.addEventListener('pointerleave', ev => { if (ev.pointerType === 'mouse') input.mouseIn = false; });

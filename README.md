@@ -8,7 +8,7 @@ Open `index.html` in any modern browser. Everything (graphics, sound, music) is 
 
 ## Controls
 
-- **Touch:** hold a finger anywhere and drag to steer (the joystick stays where you put your finger down)
+- **Touch:** choose in Settings between Floating stick, Fixed stick, Arrow buttons, Tap to swim, Swipe and Tilt (fixed stick and arrows can be placed left, middle or right in three sizes)
 - **Keyboard:** WASD or arrow keys to move, Esc/P to pause, 1/2/3 to pick level-up cards, R to reroll
 
 ## Features
