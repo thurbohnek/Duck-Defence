@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#16748d">
 <title>Duck Defense</title>
+<!-- Duck Defense. Copyright (c) 2026 Ørjan Grane / Studio.grane. All rights reserved. Contact: studio.grane@gmail.com -->
+<meta name="author" content="Studio.grane">
+<meta name="copyright" content="© 2026 Ørjan Grane / Studio.grane. All rights reserved.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@600;700;800;900&display=swap">
 <style>
@@ -91,6 +94,7 @@ h1,h2,h3{margin:0}
 .btn[disabled]{filter:grayscale(.7) opacity(.6);cursor:not-allowed}
 .chipline{display:flex;align-items:center;justify-content:center;gap:8px;color:#fff;font-weight:900;font-size:19px;text-shadow:0 2px 0 var(--ink);margin-top:18px}
 .chip{display:inline-block;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3b0,#ffc23a 55%,#e08a00);border:2px solid var(--ink);flex:none;vertical-align:middle}
+.copy{text-align:center;color:#cdeff5;font-size:12px;margin-top:14px;text-shadow:0 1px 0 var(--ink);opacity:.9}
 .records{text-align:center;color:#e6fbff;font-size:14px;margin-top:8px;text-shadow:0 1px 0 var(--ink)}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .topbar h2{color:#fff;font-size:clamp(28px,7vw,40px);text-shadow:0 3px 0 var(--ink)}
@@ -244,6 +248,7 @@ h1,h2,h3{margin:0}
       </div>
       <div class="chipline"><span class="chip"></span><span id="titleChips">0</span> rubber chips</div>
       <div class="records" id="records"></div>
+      <div class="copy">© 2026 Studio.grane. All rights reserved.</div>
     </div>
   </div>
 
@@ -382,6 +387,11 @@ h1,h2,h3{margin:0}
    variants, caps on enemies/projectiles/particles/numbers, virtual camera
    scaled by screen area so phones and desktops see a similar arena slice.
    ====================================================================== */
+/* Duck Defense
+   Copyright (c) 2026 Ørjan Grane / Studio.grane. All rights reserved.
+   This code, its graphics, sounds and music may not be copied, modified,
+   distributed or used commercially without written permission.
+   Contact: studio.grane@gmail.com */
 'use strict';
 (function(){
 const TAU = Math.PI * 2;

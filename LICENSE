@@ -1,0 +1,34 @@
+Duck Defense
+Copyright (c) 2026 Ørjan Grane / Studio.grane. All rights reserved.
+
+This repository and everything in it, including the source code, game
+design, graphics, characters, names, sound effects and music, is the
+property of Ørjan Grane (Studio.grane) and is protected by copyright law.
+
+You may play the game in your web browser, for free and for personal use,
+from the official page: https://thurbohnek.github.io/Duck-Defence/
+
+Without prior written permission from the copyright holder you may NOT:
+
+  - copy, reproduce or republish the game or any part of it;
+  - modify it, translate it or make derivative works based on it;
+  - distribute, sell, rent, sublicense or host it anywhere else,
+    including app stores, game portals and other websites;
+  - use any of it, in whole or in part, for commercial purposes.
+
+The source code is publicly visible on GitHub for transparency only.
+Being able to view or fork it on GitHub does not grant any license
+beyond what the GitHub Terms of Service require.
+
+THE GAME IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THE GAME.
+
+Third-party material
+--------------------
+The game loads two fonts from Google Fonts at runtime. They are not part
+of this copyright and remain under their own open licenses:
+  - Luckiest Guy by Astigmatic, Apache License 2.0
+  - Nunito by Vernon Adams, Cyreal and Jacques Le Bailly, SIL Open Font License 1.1
+
+For permission requests and other enquiries: studio.grane@gmail.com
