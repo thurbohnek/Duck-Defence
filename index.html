@@ -2088,7 +2088,7 @@ function renderCards(){
 function chooseCard(i){
   if (state !== 'level' || !curOpts[i]) return;
   applyOption(curOpts[i]); Snd.play('pick');
-  hide('scrLevel'); state = 'play';
+  hide('scrLevel'); state = 'play'; startCountdown();
   player.inv = Math.max(player.inv, 0.6);
   ringFx(player.x, player.y, 10, 120, 0.35, '#fff07a', 6);
   lastT = 0;
@@ -2131,7 +2131,7 @@ function openChest(n, boss){
   show('scrChest');
   try { $('bChestOk').focus({ preventScroll: true }); } catch (e) {}
 }
-function closeChest(){ if (state !== 'chest') return; hide('scrChest'); state = 'play'; player.inv = Math.max(player.inv, 0.8); lastT = 0; Snd.play('pick'); }
+function closeChest(){ if (state !== 'chest') return; hide('scrChest'); state = 'play'; startCountdown(); player.inv = Math.max(player.inv, 0.8); lastT = 0; Snd.play('pick'); }
 
 /* ------------------------------ HINTS / BANNERS ------------------------------ */
 let hintTimer = 0, bannerTimer = 0, lastPointer = 'mouse';
@@ -2573,6 +2573,7 @@ function ctrlGeom(){
 }
 function drawScreenUI(t){
   drawControls(t);
+  drawCountdown();
   // off-screen boss arrows
   for (const b of run.bosses){
     if (b.dead) continue;
@@ -2686,6 +2687,7 @@ function goTitle(){
   try { $('bPlay').focus({ preventScroll: true }); } catch (e) {}
 }
 function startRun(){
+  resumeCD = 0;
   input.swX = input.swY = 0; input.tapHas = false; input.tilt.cal = true;
   newRun(SAVE.sel);
   state = 'play'; only(null); $('hud').classList.remove('hidden');
@@ -2707,7 +2709,7 @@ function pauseGame(){
   show('scrPause');
   try { $('bResume').focus({ preventScroll: true }); } catch (e) {}
 }
-function resumeGame(){ if (state !== 'pause') return; hide('scrPause'); state = 'play'; lastT = 0; Snd.resume(); input.tilt.cal = true; }
+function resumeGame(){ if (state !== 'pause') return; hide('scrPause'); state = 'play'; startCountdown(); lastT = 0; Snd.resume(); input.tilt.cal = true; }
 
 function endRun(won){
   if (run.over) return;
@@ -3015,12 +3017,40 @@ on('confirmNo', () => closeConfirm(false));
 
 /* ------------------------------ MAIN LOOP ------------------------------ */
 let lastT = 0, acc = 0, bot = null, clock = 0;
+const COUNTDOWN = 2;
+let resumeCD = 0;
+function startCountdown(){ resumeCD = bot ? 0 : COUNTDOWN; lastT = 0; acc = 0; }
+function drawCountdown(){
+  if (resumeCD <= 0 || state !== 'play') return;
+  const n = Math.ceil(resumeCD), k = resumeCD - (n - 1);
+  const pop = 1 + Math.max(0, k - 0.75) * 1.6;
+  ctx.fillStyle = 'rgba(14,52,72,.28)'; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.translate(W / 2, H * 0.22 + 40); ctx.scale(pop, pop);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  ctx.font = "96px 'Luckiest Guy', 'Arial Rounded MT Bold', sans-serif";
+  ctx.lineWidth = 14; ctx.strokeStyle = INK; ctx.strokeText(String(n), 0, 0);
+  ctx.fillStyle = '#ffd23f'; ctx.fillText(String(n), 0, 0);
+  ctx.restore();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = "26px 'Luckiest Guy', 'Arial Rounded MT Bold', sans-serif";
+  ctx.lineWidth = 6; ctx.strokeStyle = INK; ctx.strokeText('Get ready!', W / 2, H * 0.22 + 116);
+  ctx.fillStyle = '#fff'; ctx.fillText('Get ready!', W / 2, H * 0.22 + 116);
+}
 function frame(now){
   const t = now / 1000;
   let dt = lastT ? t - lastT : STEP; lastT = t;
   if (dt > 0.25) dt = 0.25;
   clock += dt;
-  if (state === 'play' && run){
+  if (state === 'play' && run && resumeCD > 0){
+    // short "get ready" countdown after menus: the world stays frozen
+    if (run.pendingLv > 0 && player.alive && !run.won){ resumeCD = 0; openLevelUp(); }
+    else {
+      const before = Math.ceil(resumeCD); resumeCD = Math.max(0, resumeCD - dt); acc = 0;
+      const after = Math.ceil(resumeCD);
+      if (after !== before) Snd.play(after > 0 ? 'click' : 'pick');
+    }
+    if (run && !run.over) updateHUD();
+  } else if (state === 'play' && run){
     acc += dt;
     if (dt < 0.1){
       slowEma = slowEma * 0.94 + dt * 0.06; slowCool -= dt;
