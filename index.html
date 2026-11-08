@@ -22,8 +22,13 @@ body{font-family:'Nunito',ui-rounded,'Segoe UI',system-ui,-apple-system,sans-ser
 *{box-sizing:border-box}
 .display{font-family:'Luckiest Guy','Arial Rounded MT Bold','Trebuchet MS',system-ui,sans-serif;letter-spacing:.03em;font-weight:400}
 #app{position:fixed;inset:0;overflow:hidden}
-#game{position:absolute;inset:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-#cv{display:block;width:100%;height:100%}
+#game{position:absolute;inset:0;z-index:0;isolation:isolate;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#cv{position:relative;z-index:1;display:block;width:100%;height:100%}
+#waterL{position:absolute;left:0;top:0;overflow:hidden;transform-origin:0 0;will-change:transform;pointer-events:none;contain:strict}
+#waterT{position:absolute;left:-256px;top:-256px;right:0;bottom:0;background-repeat:repeat;will-change:transform;animation:wdrift 30s linear infinite}
+#waterT.still{animation:none}
+@keyframes wdrift{from{transform:translate(0,0)}to{transform:translate(256px,256px)}}
+@media (prefers-reduced-motion:reduce){#waterT{animation:none}}
 .hidden{display:none !important}
 button{font:inherit;color:inherit;cursor:pointer}
 button:focus-visible,[tabindex]:focus-visible{outline:3px dashed #fff;outline-offset:3px;box-shadow:0 0 0 6px var(--ink)}
@@ -32,12 +37,12 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px dashed #fff;outline-of
 #hud{position:absolute;left:0;right:0;top:0;pointer-events:none;user-select:none;-webkit-user-select:none;
   padding:calc(6px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 0 max(16px,env(safe-area-inset-left,0px))}
 .xpbar{position:relative;height:14px;border:3px solid var(--ink);border-radius:10px;background:#0e4f61;overflow:hidden}
-#xpfill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#7fe6ff,#c9f5ff);border-radius:0 6px 6px 0;transition:width .12s}
+#xpfill{position:absolute;left:0;top:0;bottom:0;width:100%;transform:scaleX(0);transform-origin:0 50%;will-change:transform;background:linear-gradient(90deg,#7fe6ff,#c9f5ff);border-radius:0 6px 6px 0;transition:transform .12s}
 .hudrow{display:flex;align-items:center;gap:10px;margin-top:6px;min-height:44px}
 .hpwrap{display:flex;align-items:center;gap:8px;flex:1 1 0;min-width:0}
 .lvbadge{flex:none;min-width:44px;height:30px;padding:0 8px;border:3px solid var(--ink);border-radius:10px;background:var(--duck);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink);box-shadow:0 3px 0 var(--ink)}
 .hpbar{position:relative;flex:1 1 auto;max-width:220px;height:20px;border:3px solid var(--ink);border-radius:10px;background:#6b2c3a;overflow:hidden;box-shadow:0 3px 0 var(--ink)}
-#hpfill{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(#ff8d8d,#ff5a5f);transition:width .15s}
+#hpfill{position:absolute;left:0;top:0;bottom:0;width:100%;transform-origin:0 50%;will-change:transform;background:linear-gradient(#ff8d8d,#ff5a5f);transition:transform .15s}
 #hptext{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;text-shadow:0 1px 0 var(--ink),0 -1px 0 var(--ink),1px 0 0 var(--ink),-1px 0 0 var(--ink)}
 #timer{flex:none;font-size:26px;color:#fff;text-shadow:0 3px 0 var(--ink),0 0 6px rgba(31,51,80,.5);min-width:72px;text-align:center}
 .hudright{flex:1 1 0;display:flex;justify-content:flex-end;align-items:center;gap:8px;min-width:0}
@@ -55,7 +60,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px dashed #fff;outline-of
 #bossbar{margin:8px auto 0;max-width:520px;text-align:center}
 #bossname{display:block;color:#fff;font-size:17px;text-shadow:0 2px 0 var(--ink)}
 .bb{height:14px;border:3px solid var(--ink);border-radius:9px;background:#3b2348;overflow:hidden;margin-top:2px}
-#bossfill{height:100%;width:100%;background:linear-gradient(#c79bff,#8b6cc0)}
+#bossfill{height:100%;width:100%;transform-origin:0 50%;background:linear-gradient(#c79bff,#8b6cc0)}
 
 #hint{position:absolute;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);pointer-events:none;
   background:var(--enamel);border:3px solid var(--ink);border-radius:16px;padding:10px 16px;font-weight:900;font-size:16px;box-shadow:0 4px 0 var(--ink);
@@ -233,7 +238,7 @@ h1,h2,h3{margin:0}
 </head>
 <body>
 <div id="app">
-  <div id="game"><canvas id="cv" aria-label="Duck Defense game area"></canvas></div>
+  <div id="game"><div id="waterL"><div id="waterT"></div></div><canvas id="cv" aria-label="Duck Defense game area"></canvas></div>
 
   <div id="hud" class="hidden">
     <div class="xpbar"><div id="xpfill"></div></div>
@@ -471,7 +476,7 @@ function defaultSave(){
   return { v: 1, chips: 0, shop: {}, ducks: { sunny: true }, sel: 'sunny', heat: 0, maxHeat: 0,
     stage: 0, stageMax: 0, stageRec: {}, trueWins: 0,
     stats: { kills: 0, runs: 0, wins: 0, bestTime: 0, bestLevel: 0, bestKills: 0, bosses: {}, evolved: 0 },
-    settings: { sound: true, music: true, shake: true, nums: true, follow: false, ctrl: 'float', ctrlPos: 'center', ctrlSize: 'M' } };
+    settings: { sound: true, music: true, shake: true, nums: true, follow: false, gfx: 'auto', ctrl: 'float', ctrlPos: 'center', ctrlSize: 'M' } };
 }
 function mergeInto(base, o){
   if (!o || typeof o !== 'object') return base;
@@ -538,7 +543,7 @@ const Snd = {
     if (!this.ctx || !SAVE.settings.sound || this.ctx.state !== 'running') return false;
     const now = this.ctx.currentTime;
     if (this.last[name] && now - this.last[name] < gap) return false;
-    if (this.voices > 26) return false;
+    if (this.voices > 16) return false;
     this.last[name] = now; return true;
   },
   tone(f0, f1, dur, type, vol, delay, dest){
@@ -1582,13 +1587,13 @@ function addShake(a){ if (reduceMotion || !SAVE.settings.shake) return; shake = 
 
 /* ------------------------------ POOLS ------------------------------ */
 function part(x, y, vx, vy, life, size, col, kind){
-  if (parts.length >= MAX_PARTS) return null;
+  if (parts.length >= partCap()) return null;
   const p = partfree.pop() || {};
   p.x = x; p.y = y; p.vx = vx; p.vy = vy; p.life = life; p.max = life; p.size = size; p.col = col; p.kind = kind || 0; p.rot = Math.random() * TAU;
   parts.push(p); return p;
 }
 function burst(x, y, n, col, spd, size, life){
-  if (parts.length > MAX_PARTS * 0.8) n = Math.ceil(n / 3);
+  if (parts.length > partCap() * 0.8) n = Math.ceil(n / 3);
   for (let i = 0; i < n; i++){ const a = Math.random() * TAU, s = spd * rand(0.3, 1); part(x, y, Math.cos(a) * s, Math.sin(a) * s, life * rand(0.6, 1.1), size * rand(0.6, 1.2), col, 0); }
 }
 function ringFx(x, y, r0, r1, life, col, w){
@@ -1816,7 +1821,7 @@ function killEnemy(e, src){
     case 'pod': if (Math.hypot(player.x - e.x, player.y - e.y) > 110) for (let i = 0; i < 5; i++){ const a = i / 5 * TAU + rand(0, 1); enemyShot('goo', e.x, e.y, Math.cos(a) * 95, Math.sin(a) * 95, 8, e.dmg * 0.8, 3.2); } break;
     case 'slime': if (!e.small){ for (let i = 0; i < 2; i++){ const a = rand(0, TAU); const s = spawnEnemy('slime', clamp(e.x + Math.cos(a) * 14, 10, WORLD.w - 10), clamp(e.y + Math.sin(a) * 14, 10, WORLD.h - 10), { instant: true, small: true, elite: e.elite }); if (s){ s.kx = Math.cos(a) * 200; s.ky = Math.sin(a) * 200; } } } break;
   }
-  if (parts.length < MAX_PARTS - 2) part(e.x, e.y, 0, 0, 0.25, e.r * 1.2, '#ffffff', 2);
+  if (parts.length < partCap() - 2) part(e.x, e.y, 0, 0, 0.25, e.r * 1.2, '#ffffff', 2);
   Snd.play(e.r > 18 ? 'bigpop' : 'pop', 1 + (24 - e.r) / 40);
   if (e.type === 'fizzer') booms.push({ x: e.x, y: e.y, rad: 78 * (e.elite ? 1.4 : 1), dmg: 30 + run.time * 0.05, src: 'fizz', delay: 0.06, hurtP: e.state === 2 ? e.dmg * 1.6 : 0, col: '#ff9ec7' });
   if (e.type === 'sock'){
@@ -2816,7 +2821,7 @@ function updateProjectiles(dt){
     const b = eplist[i]; if (b.dead) continue;
     b.life -= dt; b.t += dt; b.x += b.vx * dt; b.y += b.vy * dt;
     if (b.life <= 0 || b.x < -40 || b.y < -40 || b.x > WORLD.w + 40 || b.y > WORLD.h + 40){ b.dead = true; continue; }
-    if (OBS.length && hitsObs(b.x, b.y, b.r * 0.6)){ b.dead = true; if (parts.length < MAX_PARTS - 4) burst(b.x, b.y, 3, '#ffffff', 80, 4, 0.25); continue; }
+    if (OBS.length && hitsObs(b.x, b.y, b.r * 0.6)){ b.dead = true; if (parts.length < partCap() - 4) burst(b.x, b.y, 3, '#ffffff', 80, 4, 0.25); continue; }
     const dx = b.x - p.x, dy = b.y - p.y, rr = b.r + p.r * 0.7;
     if (p.alive && dx * dx + dy * dy < rr * rr){ b.dead = true; hurtPlayer(b.dmg); burst(b.x, b.y, 5, '#7fe0c0', 100, 4, 0.3); }
   }
@@ -2845,7 +2850,7 @@ function updateBooms(dt){
     b.done = true;
     ringFx(b.x, b.y, b.rad * 0.3, b.rad, 0.3, b.col, 6);
     burst(b.x, b.y, 10, b.col, b.rad * 3, 6, 0.4);
-    if (parts.length < MAX_PARTS) part(b.x, b.y, 0, 0, 0.18, b.rad * 0.9, '#ffffff', 2);
+    if (parts.length < partCap()) part(b.x, b.y, 0, 0, 0.18, b.rad * 0.9, '#ffffff', 2);
     Snd.play(b.src === 'mines' ? 'boom' : 'splash'); addShake(b.src === 'fizz' ? 2 : 2.5);
     const cnt = query(b.x, b.y, b.rad, Q2); const list = Q2.slice(0, cnt);
     for (const e of list){ const a = Math.atan2(e.y - b.y, e.x - b.x); hurtEnemy(e, b.src === 'fizz' ? b.dmg * player.dmgMul : b.dmg, b.src, Math.cos(a), Math.sin(a), 200, b.src === 'fizz'); if (b.stun) e.stun = Math.max(e.stun, b.stun); }
@@ -3131,7 +3136,7 @@ function updateHints(dt){
 const cv = document.getElementById('cv');
 const ctx = cv.getContext('2d');
 let W = 800, H = 600, DPR = 1;
-let waterPat = null, tilePat = null;
+let waterPat = null, tilePat = null, waterTile = null;
 function makePatterns(){
   const c = mkCanvas(256, 256), g = c.getContext('2d');
   g.fillStyle = '#5cc6d6'; g.fillRect(0, 0, 256, 256);
@@ -3143,7 +3148,7 @@ function makePatterns(){
   }
   g.fillStyle = 'rgba(255,255,255,.08)';
   for (let i = 0; i < 10; i++){ g.beginPath(); g.arc((i * 71) % 256, (i * 113) % 256, 6 + (i % 3) * 3, 0, TAU); g.fill(); }
-  waterPat = ctx.createPattern(c, 'repeat');
+  waterPat = ctx.createPattern(c, 'repeat'); waterTile = c;
   const t = mkCanvas(96, 96), tg = t.getContext('2d');
   tg.fillStyle = '#e7f4f2'; tg.fillRect(0, 0, 96, 96);
   tg.fillStyle = '#d4e9e6'; tg.fillRect(0, 0, 48, 48); tg.fillRect(48, 48, 48, 48);
@@ -3151,6 +3156,10 @@ function makePatterns(){
   tilePat = ctx.createPattern(t, 'repeat');
 }
 let qualDPR = 2, slowEma = 1 / 60, slowCool = 0;
+function gfxMode(){ return SAVE.settings.gfx || 'auto'; }
+function gfxStartDPR(){ const m = gfxMode(); return m === 'sharp' ? 2 : m === 'low' ? 1 : 1.5; }
+function partCap(){ return gfxMode() === 'low' ? 140 : MAX_PARTS; }
+qualDPR = gfxStartDPR();
 function resize(){
   const r = cv.getBoundingClientRect();
   W = Math.max(1, r.width || window.innerWidth || 800); H = Math.max(1, r.height || window.innerHeight || 600);
@@ -3168,7 +3177,7 @@ function srand(seed){ let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>
 function wrap9(S, fn){ for (const ox of [-S, 0, S]) for (const oy of [-S, 0, S]) fn(ox, oy); }
 const PATS = {};
 function getPats(st){
-  if (st.id === 'tub') return { water: waterPat, floor: tilePat, rim: null };
+  if (st.id === 'tub') return { water: waterPat, waterTile: waterTile, floor: tilePat, rim: null };
   if (PATS[st.id]) return PATS[st.id];
   const P = st.pal, R = srand(st.idx * 977 + 13), out = {};
   // ---- water
@@ -3193,7 +3202,7 @@ function getPats(st){
     for (let i = 0; i < 7; i++){ let x = R() * S, y = R() * S; const pts = [[x, y]]; for (let k = 0; k < 4; k++){ x += (R() - 0.5) * 70; y += (R() - 0.5) * 70; pts.push([x, y]); }
       wrap9(S, (ox, oy) => { g.beginPath(); pts.forEach((q, k) => k ? g.lineTo(q[0] + ox, q[1] + oy) : g.moveTo(q[0] + ox, q[1] + oy)); g.stroke(); }); }
     g.fillStyle = 'rgba(255,255,255,.35)'; for (let i = 0; i < 6; i++){ const x = R() * S, y = R() * S; wrap9(S, (ox, oy) => { g.beginPath(); g.ellipse(x + ox, y + oy, 26, 6, -0.5, 0, TAU); g.fill(); }); } }
-  out.water = ctx.createPattern(c, 'repeat');
+  out.water = ctx.createPattern(c, 'repeat'); out.waterTile = c;
   // ---- floor (outside the arena)
   const F = 128, fc = mkCanvas(F, F), f = fc.getContext('2d');
   f.fillStyle = P.f1; f.fillRect(0, 0, F, F); f.lineCap = 'round';
@@ -3228,30 +3237,60 @@ function getPats(st){
   }
   return (PATS[st.id] = out);
 }
+// the water itself is a CSS layer under the canvas, moved by the compositor (nearly free on phones)
+let waterST = null, waterXf = '';
+const WATER_URL = {};
+function syncWaterStage(){
+  if (waterST === ST) return; waterST = ST;
+  const P = ST.pal, pats = getPats(ST), L = $('waterL'), T = $('waterT');
+  L.style.width = WORLD.w + 'px'; L.style.height = WORLD.h + 'px'; L.style.borderRadius = P.wr + 'px';
+  L.style.backgroundColor = P.water;
+  let url = WATER_URL[ST.id];
+  if (!url && pats.waterTile){ try { url = WATER_URL[ST.id] = pats.waterTile.toDataURL('image/png'); } catch (e) {} }
+  T.style.backgroundImage = url ? 'url(' + url + ')' : 'none';
+  T.classList.toggle('still', !!P.still);
+  $('game').style.background = P.bg; document.body.style.background = P.bg;
+}
+function placeWater(x, y, sc){
+  const v = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0) scale(' + sc.toFixed(4) + ')';
+  if (v !== waterXf){ waterXf = v; $('waterL').style.transform = v; }
+}
 function drawWorldBG(t){
+  // every screen pixel is painted once: floor / rim frame / water use even-odd "frames" instead of stacked full rects
   const P = ST.pal, pats = getPats(ST);
-  const x0 = cam.x - cam.vw / 2 - 20, y0 = cam.y - cam.vh / 2 - 20;
-  ctx.fillStyle = pats.floor || P.f1; ctx.fillRect(x0, y0, cam.vw + 40, cam.vh + 40);
-  // rim
+  const x0 = cam.x - cam.vw / 2 - 20, y0 = cam.y - cam.vh / 2 - 20, vw = cam.vw + 40, vh = cam.vh + 40;
   const rim = 46, RR = P.rimR, WR = P.wr;
-  ctx.fillStyle = 'rgba(31,51,80,.18)'; rrect(ctx, -rim + 10, -rim + 16, WORLD.w + rim * 2, WORLD.h + rim * 2, RR); ctx.fill();
-  ctx.fillStyle = pats.rim || P.rim; rrect(ctx, -rim, -rim, WORLD.w + rim * 2, WORLD.h + rim * 2, RR); ctx.fill();
-  ctx.lineWidth = 6; ctx.strokeStyle = INK; ctx.stroke();
-  // water
-  ctx.save();
-  rrect(ctx, 0, 0, WORLD.w, WORLD.h, WR); ctx.clip();
-  ctx.fillStyle = P.water; ctx.fillRect(0, 0, WORLD.w, WORLD.h);
-  if (pats.water){
-    const ax = P.still ? 0 : (t * 9) % 256, ay = P.still ? 0 : (t * 5) % 256;
-    ctx.save(); ctx.translate(ax, ay); ctx.fillStyle = pats.water;
-    ctx.fillRect(x0 - 256 - ax, y0 - 256 - ay, cam.vw + 600, cam.vh + 600); ctx.restore();
+  const OX = -rim, OY = -rim, OW = WORLD.w + rim * 2, OH = WORLD.h + rim * 2;
+  const outside = x0 < OX + 30 || y0 < OY + 30 || x0 + vw > OX + OW - 30 || y0 + vh > OY + OH - 30;
+  const nearRim = x0 < WR + 30 || y0 < WR + 30 || x0 + vw > WORLD.w - WR - 30 || y0 + vh > WORLD.h - WR - 30;
+  if (outside){
+    ctx.fillStyle = pats.floor || P.f1;
+    ctx.beginPath(); ctx.rect(x0, y0, vw, vh); rrectSub(ctx, OX, OY, OW, OH, RR); ctx.fill('evenodd');
+    ctx.fillStyle = 'rgba(31,51,80,.18)';
+    ctx.beginPath(); rrectSub(ctx, OX + 10, OY + 16, OW, OH, RR); rrectSub(ctx, OX, OY, OW, OH, RR); ctx.fill('evenodd');
   }
-  if (run && state !== 'title' && state !== 'menu') drawGround(t);
-  // edge shading
-  ctx.lineWidth = 40; ctx.strokeStyle = P.edge; rrect(ctx, 0, 0, WORLD.w, WORLD.h, WR); ctx.stroke();
-  ctx.restore();
-  ctx.lineWidth = 5; ctx.strokeStyle = INK; rrect(ctx, 0, 0, WORLD.w, WORLD.h, WR); ctx.stroke();
-  drawDecor(rim);
+  if (nearRim){
+    ctx.fillStyle = pats.rim || P.rim;
+    ctx.beginPath(); rrectSub(ctx, OX, OY, OW, OH, RR); rrectSub(ctx, 0, 0, WORLD.w, WORLD.h, WR); ctx.fill('evenodd');
+    ctx.lineWidth = 6; ctx.strokeStyle = INK; ctx.beginPath(); rrectSub(ctx, OX, OY, OW, OH, RR); ctx.stroke();
+  }
+  // water: one opaque pattern fill (drift done with the pattern's own transform)
+  if (run && state !== 'title' && state !== 'menu' && ST.id !== 'tub'){
+    if (nearRim){ ctx.save(); ctx.beginPath(); rrectSub(ctx, 0, 0, WORLD.w, WORLD.h, WR); ctx.clip(); drawGround(t); ctx.restore(); }
+    else drawGround(t);
+  }
+  if (nearRim){
+    // edge shading as an inset stroke (no clip needed)
+    ctx.lineWidth = 40; ctx.strokeStyle = P.edge; ctx.beginPath(); rrectSub(ctx, 20, 20, WORLD.w - 40, WORLD.h - 40, Math.max(0, WR - 20)); ctx.stroke();
+    ctx.lineWidth = 5; ctx.strokeStyle = INK; ctx.beginPath(); rrectSub(ctx, 0, 0, WORLD.w, WORLD.h, WR); ctx.stroke();
+    drawDecor(rim);
+  }
+}
+// adds a rounded rect sub-path to the current path (no beginPath)
+function rrectSub(g, x, y, w, h, r){
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
 }
 // little props on the rim, per stage
 function drawDecor(rim){
@@ -3488,7 +3527,7 @@ function drawEnemies(t){
   for (let i = 0; i < elist.length; i++){ const e = elist[i]; if (!e.dead && e.alpha > 0.01 && inView(e.x, e.y, e.r * 2.2 + 30)) VIS.push(e); }
   // all shadows in one path
   ctx.fillStyle = 'rgba(16,80,100,.25)'; ctx.beginPath();
-  for (let i = 0; i < VIS.length; i++){
+  if (gfxMode() !== 'low') for (let i = 0; i < VIS.length; i++){
     const e = VIS[i]; if (e.alpha < 0.5) continue; const rx = e.r * (e.jumpH ? 0.7 : 0.9), cy = e.y + e.r * 0.75;
     ctx.moveTo(e.x + rx, cy); ctx.ellipse(e.x, cy, rx, e.r * 0.28, 0, 0, TAU);
   }
@@ -3862,6 +3901,7 @@ function drawScreenUI(t){
 const deco = [];
 function drawTitleScene(t){
   cam.x = WORLD.w / 2 + Math.sin(t * 0.1) * 200; cam.y = WORLD.h / 2 + Math.cos(t * 0.08) * 120;
+  placeWater(W / 2 - cam.x * cam.scale, H / 2 - cam.y * cam.scale, cam.scale);
   ctx.setTransform(DPR * cam.scale, 0, 0, DPR * cam.scale, DPR * (W / 2 - cam.x * cam.scale), DPR * (H / 2 - cam.y * cam.scale));
   drawWorldBG(t);
   if (!deco.length){
@@ -3882,10 +3922,12 @@ function drawTitleScene(t){
 
 function render(t){
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.fillStyle = ST.pal.bg; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  syncWaterStage();
   if (!run || state === 'title' || state === 'menu'){ drawTitleScene(t); return; }
   let sx = 0, sy = 0;
   if (shake > 0){ sx = rand(-shake, shake); sy = rand(-shake, shake); }
+  placeWater(W / 2 - cam.x * cam.scale + sx, H / 2 - cam.y * cam.scale + sy, cam.scale);
   camA = DPR * cam.scale; camE = DPR * (W / 2 - cam.x * cam.scale + sx); camF = DPR * (H / 2 - cam.y * cam.scale + sy);
   ctx.setTransform(camA, 0, 0, camA, camE, camF);
   VX0 = cam.x - cam.vw / 2; VX1 = cam.x + cam.vw / 2; VY0 = cam.y - cam.vh / 2; VY1 = cam.y + cam.vh / 2;
@@ -3914,7 +3956,7 @@ function render(t){
 const $ = id => document.getElementById(id);
 const hudCache = {};
 function setText(id, v){ if (hudCache[id] !== v){ hudCache[id] = v; $(id).textContent = v; } }
-function setWidth(id, v){ v = Math.round(v * 1000) / 10; if (hudCache[id + 'w'] !== v){ hudCache[id + 'w'] = v; $(id).style.width = v + '%'; } }
+function setWidth(id, v){ v = Math.round(clamp(v, 0, 1) * 200) / 200; if (hudCache[id + 'w'] !== v){ hudCache[id + 'w'] = v; $(id).style.transform = 'scaleX(' + v + ')'; } }
 function updateHUD(){
   setWidth('xpfill', run.xp / run.need);
   setWidth('hpfill', Math.max(0, player.hp / player.maxHp));
@@ -4228,6 +4270,17 @@ function renderControls(box){
 function renderSettings(box, compact){
   box.innerHTML = ''; box.dataset.compact = compact ? '1' : '0';
   renderControls(box);
+  {
+    const r = document.createElement('div'); r.className = 'setrow';
+    const l = document.createElement('div'); l.className = 'lbl'; l.innerHTML = 'Graphics<small>Battery saver runs smoothest on older phones</small>'; r.appendChild(l);
+    const sg = document.createElement('div'); sg.className = 'seg';
+    for (const [v, t] of [['low', 'Saver'], ['auto', 'Auto'], ['sharp', 'Sharp']]){
+      const b = document.createElement('button'); b.textContent = t; b.setAttribute('aria-pressed', gfxMode() === v ? 'true' : 'false'); b.setAttribute('aria-label', 'Graphics ' + t);
+      b.addEventListener('click', () => { SAVE.settings.gfx = v; persist(); qualDPR = gfxStartDPR(); slowEma = 1 / 60; resize(); Snd.play('click'); renderSettings(box, compact); });
+      sg.appendChild(b);
+    }
+    r.appendChild(sg); box.appendChild(r);
+  }
   for (const [k, label, sub] of SETTINGS){
     if (compact && (k === 'follow' || k === 'nums')) continue;
     const r = document.createElement('div'); r.className = 'setrow';
@@ -4402,7 +4455,7 @@ function frame(now){
     acc += dt;
     if (dt < 0.1){
       slowEma = slowEma * 0.94 + dt * 0.06; slowCool -= dt;
-      if (slowEma > 1 / 42 && slowCool <= 0 && DPR > 1){ qualDPR = Math.max(1, DPR - 0.5); slowCool = 2; slowEma = 1 / 60; resize(); }
+      if (slowEma > 1 / 50 && slowCool <= 0 && DPR > 1){ qualDPR = Math.max(1, Math.round((DPR - 0.25) * 4) / 4); slowCool = 1.5; slowEma = 1 / 60; resize(); }
     }
     let n = 0;
     while (acc >= STEP && n < 3 && state === 'play'){
