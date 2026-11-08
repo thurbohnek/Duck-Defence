@@ -2146,7 +2146,9 @@ function addWeapon(id){
 /* ------------------------------ CAMERA ------------------------------ */
 const cam = { x: 0, y: 0, scale: 1, vw: 800, vh: 600 };
 let shake = 0;
-function addShake(a){ if (reduceMotion || !SAVE.settings.shake) return; shake = Math.min(14, shake + a); }
+function addShake(a){ if (reduceMotion || !SAVE.settings.shake) return; shake = Math.min(9, shake + a); }
+// shake from the duck's own weapons: tiny and never piles up, so big late-game builds stay playable
+function weaponShake(a){ if (reduceMotion || !SAVE.settings.shake) return; shake = Math.max(shake, Math.min(1.2, a * 0.5)); }
 
 /* ------------------------------ POOLS ------------------------------ */
 function part(x, y, vx, vy, life, size, col, kind){
@@ -2167,7 +2169,7 @@ function dmgNum(x, y, v, crit, col){
   if (!SAVE.settings.nums) return;
   if (nums.length >= MAX_NUMS){ const o = nums.shift(); numfree.push(o); }
   const n = numfree.pop() || {};
-  n.x = x + rand(-6, 6); n.y = y - 10; n.vy = -60; n.v = Math.round(v); n.t = 0; n.life = crit ? 0.8 : 0.6; n.crit = crit; n.col = col || null;
+  n.x = x + rand(-6, 6); n.y = y - 10; n.vy = -60; n.v = typeof v === 'number' ? Math.round(v) : v; n.t = 0; n.life = typeof v === 'number' ? (crit ? 0.8 : 0.6) : 1.2; n.crit = crit; n.col = col || null;
   nums.push(n);
 }
 function shootProj(kind, x, y, vx, vy, r, dmg, pierce, life, src){
@@ -3274,7 +3276,7 @@ function updateWeapons(dt){
             const cnt = query(p.x, p.y, R, Q1); let healed = 0;
             for (let q = 0; q < cnt; q++){ const e = Q1[q]; const ka = Math.atan2(e.y - p.y, e.x - p.x); hurtEnemy(e, dmgOf(s.dmg), 'whip', Math.cos(ka), Math.sin(ka), 200); if (healed < 10){ healed++; } }
             if (healed && p.hp < p.maxHp) p.hp = Math.min(p.maxHp, p.hp + healed * 0.6);
-            Snd.play('whip'); addShake(1.5);
+            Snd.play('whip'); weaponShake(1.5);
           } else {
             doWhip(s, A, p.face);
             if (s.both) w.back = 0.15;
@@ -3304,7 +3306,7 @@ function doShock(s, A, evo){
   // shockwaves also pop goo blobs
   for (const b of eplist){ if (Math.hypot(b.x - p.x, b.y - p.y) < R) b.dead = true; }
   p.squash = 0.35;
-  Snd.play('squeak'); addShake(evo ? 3 : 1.5);
+  Snd.play('squeak'); weaponShake(evo ? 2.4 : 1.5);
 }
 function doWhip(s, A, dir){
   const p = player; const len = s.len * A, h = s.h * A;
@@ -3414,7 +3416,7 @@ function updateBooms(dt){
     ringFx(b.x, b.y, b.rad * 0.3, b.rad, 0.3, b.col, 6);
     burst(b.x, b.y, 10, b.col, b.rad * 3, 6, 0.4);
     if (parts.length < partCap()) part(b.x, b.y, 0, 0, 0.18, b.rad * 0.9, '#ffffff', 2);
-    Snd.play(b.src === 'mines' ? 'boom' : 'splash'); addShake(b.src === 'fizz' ? 2 : 2.5);
+    Snd.play(b.src === 'mines' ? 'boom' : 'splash'); if (b.src === 'mines') weaponShake(2.5); else addShake(1.5);
     const cnt = query(b.x, b.y, b.rad, Q2); const list = Q2.slice(0, cnt);
     for (const e of list){ const a = Math.atan2(e.y - b.y, e.x - b.x); hurtEnemy(e, b.src === 'fizz' ? b.dmg * player.dmgMul : b.dmg, b.src, Math.cos(a), Math.sin(a), 200, b.src === 'fizz'); if (b.stun) e.stun = Math.max(e.stun, b.stun); }
     if (b.hurtP && Math.hypot(player.x - b.x, player.y - b.y) < b.rad + player.r * 0.5) hurtPlayer(b.hurtP);
@@ -3519,7 +3521,7 @@ function step(dt){
   const mxw = 140;
   if (cam.vw > WORLD.w + mxw * 2) cam.x = WORLD.w / 2; else cam.x = clamp(cam.x, cam.vw / 2 - mxw, WORLD.w - cam.vw / 2 + mxw);
   if (cam.vh > WORLD.h + mxw * 2) cam.y = WORLD.h / 2; else cam.y = clamp(cam.y, cam.vh / 2 - mxw, WORLD.h - cam.vh / 2 + mxw);
-  if (shake > 0) shake = Math.max(0, shake - dt * 30);
+  if (shake > 0) shake = Math.max(0, shake - dt * 40);
   // music heat: time into the run plus how crowded the arena is (layers fade in as it rises)
   Snd.heatT = Math.min(1, clamp(run.time / 540, 0, 1) * 0.75 + clamp((elist.length - 15) / 100, 0, 1) * 0.35);
 }
@@ -3588,10 +3590,18 @@ function evolve(id){
 
 let curOpts = [];
 function openLevelUp(){
+  const opts = buildOptions(3);
+  if (opts.length && opts.every(o => o.kind === 'snack' || o.kind === 'chips')){
+    // everything is maxed: just hand out the treat and chips, no card screen, no countdown
+    run.pendingLv--;
+    player.hp = Math.min(player.maxHp, player.hp + 30); run.chipsFound += 15;
+    Snd.play('chip'); dmgNum(player.x, player.y - player.r - 18, '+15 chips', false, '#ffc23a');
+    return;
+  }
   state = 'level'; releaseInput();
   run.pendingLv--;
   Snd.play('level');
-  curOpts = buildOptions(run.level >= 1 && Math.random() < 0 ? 4 : 3);
+  curOpts = opts;
   $('lvTitle').textContent = 'Level ' + run.level + '!';
   $('lvSub').textContent = run.pendingLv > 0 ? 'Choose one  (+' + run.pendingLv + ' more)' : 'Choose one';
   renderCards();
