@@ -15,6 +15,8 @@ Play it at **https://thurbohnek.github.io/Duck-Defence/** or open `index.html` i
 
 ## Features
 
+- 10 stages, each with its own hazard, new enemies and final boss: The Bathtub, Kitchen Sink, Swimming Pool, Laundry Room, Garden Pond, Hot Spring, Tide Pool, Frozen Lake, The Sewer and the Grime Factory finale
+
 - 8 weapons, each with 5 levels and an evolution
 - 9 passive items
 - 7 enemy types and 4 bosses
