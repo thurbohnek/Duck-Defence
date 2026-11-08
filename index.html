@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#16748d">
-<title>Duck Defense</title>
-<!-- Duck Defense. Copyright (c) 2026 Ørjan Grane / Studio.grane. All rights reserved. Contact: studio.grane@gmail.com -->
+<title>Quackpocalypse</title>
+<!-- Quackpocalypse. Copyright (c) 2026 Ørjan Grane / Studio.grane. All rights reserved. Contact: studio.grane@gmail.com -->
 <meta name="author" content="Studio.grane">
 <meta name="copyright" content="© 2026 Ørjan Grane / Studio.grane. All rights reserved.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -83,8 +83,8 @@ h1,h2,h3{margin:0}
 .logo{text-align:center;color:var(--duck);font-size:clamp(46px,13vw,104px);line-height:.9;
   text-shadow:0 4px 0 var(--ink),4px 0 0 var(--ink),-4px 0 0 var(--ink),0 -4px 0 var(--ink),3px 3px 0 var(--ink),-3px 3px 0 var(--ink),3px -3px 0 var(--ink),-3px -3px 0 var(--ink),0 10px 0 var(--ink);
   transform:rotate(-3deg);margin:8px 0 6px}
-.logo span{display:block;color:#fff}
-.tag{text-align:center;color:#fff;font-weight:900;font-size:17px;text-shadow:0 2px 0 var(--ink);margin-bottom:22px}
+.logo span{display:block;color:#fff;font-size:.8em;margin-top:.04em}
+.tag{text-align:center;margin-top:14px;color:#fff;font-weight:900;font-size:17px;text-shadow:0 2px 0 var(--ink);margin-bottom:22px}
 .menu{display:flex;flex-direction:column;gap:14px;width:100%;max-width:340px;margin:0 auto}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:8px 20px;border:3px solid var(--ink);border-radius:16px;
   background:var(--duck);color:var(--ink);box-shadow:0 5px 0 var(--ink);font-family:'Luckiest Guy','Arial Rounded MT Bold','Trebuchet MS',sans-serif;font-size:21px;letter-spacing:.04em;
@@ -238,7 +238,7 @@ h1,h2,h3{margin:0}
 </head>
 <body>
 <div id="app">
-  <div id="game"><div id="waterL"><div id="waterT"></div></div><canvas id="cv" aria-label="Duck Defense game area"></canvas></div>
+  <div id="game"><div id="waterL"><div id="waterT"></div></div><canvas id="cv" aria-label="Quackpocalypse game area"></canvas></div>
 
   <div id="hud" class="hidden">
     <div class="xpbar"><div id="xpfill"></div></div>
@@ -263,7 +263,7 @@ h1,h2,h3{margin:0}
   <!-- Title -->
   <div id="scrTitle" class="screen">
     <div class="inner">
-      <h1 class="logo display">Duck<span>Defense</span></h1>
+      <h1 class="logo display">Quack<span>pocalypse</span></h1>
       <div class="tag">Squeak back against the grime!</div>
       <div class="menu">
         <button class="btn big" id="bPlay">Play</button>
@@ -390,7 +390,7 @@ h1,h2,h3{margin:0}
 </div>
 <script>
 /* ======================================================================
-   DUCK DEFENSE - design plan
+   QUACKPOCALYPSE - design plan
    ----------------------------------------------------------------------
    Core: arena survivor roguelite in a huge bathtub. Player = rubber duck,
    moves (drag joystick anywhere / WASD / arrows / optional mouse follow),
@@ -437,7 +437,7 @@ h1,h2,h3{margin:0}
    variants, caps on enemies/projectiles/particles/numbers, virtual camera
    scaled by screen area so phones and desktops see a similar arena slice.
    ====================================================================== */
-/* Duck Defense
+/* Quackpocalypse
    Copyright (c) 2026 Ørjan Grane / Studio.grane. All rights reserved.
    This code, its graphics, sounds and music may not be copied, modified,
    distributed or used commercially without written permission.

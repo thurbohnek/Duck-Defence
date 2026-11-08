@@ -1,8 +1,8 @@
-# Duck Defense
+# Quackpocalypse
 
 © 2026 Ørjan Grane / Studio.grane. All rights reserved.
 
-A rubber-duck arena survivor roguelite in a giant bathtub. Swim around, let your weapons fire automatically, pop waves of grime, collect pearls, level up and evolve your weapons. Survive 12 minutes and defeat the Loofah King.
+A rubber-duck arena survivor roguelite: the grime apocalypse has arrived, and one brave rubber duck stands in its way. Swim around, let your weapons fire automatically, pop waves of grime, collect pearls, level up and evolve your weapons. Survive 12 minutes and defeat the Loofah King.
 
 ## Play
 
