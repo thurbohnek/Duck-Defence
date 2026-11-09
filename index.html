@@ -43,8 +43,26 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px dashed #fff;outline-of
 .lvbadge{flex:none;min-width:44px;height:30px;padding:0 8px;border:3px solid var(--ink);border-radius:10px;background:var(--duck);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink);box-shadow:0 3px 0 var(--ink)}
 .hpbar{position:relative;flex:1 1 auto;max-width:220px;height:20px;border:3px solid var(--ink);border-radius:10px;background:#6b2c3a;overflow:hidden;box-shadow:0 3px 0 var(--ink)}
 #hpfill{position:absolute;left:0;top:0;bottom:0;width:100%;transform-origin:0 50%;will-change:transform;background:linear-gradient(#ff8d8d,#ff5a5f);transition:transform .15s}
-#hptext{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;text-shadow:0 1px 0 var(--ink),0 -1px 0 var(--ink),1px 0 0 var(--ink),-1px 0 0 var(--ink)}
-#timer{flex:none;font-size:26px;color:#fff;text-shadow:0 3px 0 var(--ink),0 0 6px rgba(31,51,80,.5);min-width:72px;text-align:center}
+#hptext{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;white-space:nowrap;letter-spacing:-.02em;font-size:12px;font-weight:900;color:#fff;text-shadow:0 1px 0 var(--ink),0 -1px 0 var(--ink),1px 0 0 var(--ink),-1px 0 0 var(--ink)}
+#timer{flex:none;font-size:26px;line-height:1;color:#fff;text-shadow:0 3px 0 var(--ink),0 0 6px rgba(31,51,80,.5);min-width:72px;text-align:center;padding-top:3px}
+.tcol{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:72px}
+#bmeter{width:72px;visibility:hidden;display:flex;flex-direction:column;align-items:stretch;gap:1px}
+#bmlabel{font-size:10px;line-height:11px;font-weight:900;letter-spacing:.06em;color:#fff;text-align:center;white-space:nowrap;text-shadow:0 1px 0 var(--ink),0 -1px 0 var(--ink),1px 0 0 var(--ink),-1px 0 0 var(--ink)}
+.bm{position:relative;height:9px;border:2px solid var(--ink);border-radius:6px;background:#3b2348;overflow:hidden}
+.bm i{position:absolute;left:0;top:0;bottom:0;width:100%;transform:scaleX(0);transform-origin:0 50%;will-change:transform}
+#bmtime{background:rgba(255,255,255,.38)}
+#bmfill{background:#ff9f43}
+#bmeter.full #bmfill{background:#ff5a5f}
+#bmeter.full #bmlabel{color:#ffd9e0}
+#bmeter.due{animation:bmpulse .5s ease-in-out infinite alternate}
+@keyframes bmpulse{from{opacity:1}to{opacity:.45}}
+@media (max-width:400px){#hptext{font-size:10.5px}.lvbadge{padding:0 5px;font-size:15px}.hudrow{gap:8px}}
+.hudrow2{display:flex;align-items:flex-start;gap:8px;margin-top:4px}
+.hudrow2 #slots{flex:1 1 auto;margin-top:0}
+#combo{flex:none;width:88px;text-align:right;visibility:hidden;color:#fff;line-height:1;text-shadow:0 2px 0 var(--ink),0 -1px 0 var(--ink),1px 0 0 var(--ink),-1px 0 0 var(--ink);contain:layout paint style}
+#combo b{display:block;font-family:'Luckiest Guy','Arial Rounded MT Bold',sans-serif;font-weight:400;font-size:20px;letter-spacing:.03em;color:#fff3c4}
+#combo span{display:block;font-size:10px;font-weight:900;letter-spacing:.06em;margin-top:1px}
+#combo.hot b{color:#ffc23a}
 .hudright{flex:1 1 0;display:flex;justify-content:flex-end;align-items:center;gap:8px;min-width:0}
 .killc{display:flex;align-items:center;gap:5px;color:#fff;font-weight:900;font-size:15px;text-shadow:0 2px 0 var(--ink);white-space:nowrap}
 .killc i{display:inline-block;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#bfe9ff 45%,#8ad3f0);border:2px solid var(--ink)}
@@ -195,6 +213,50 @@ h1,h2,h3{margin:0}
 .dmgrow .bar{flex:1;height:14px;background:#e8dfcf;border:2px solid var(--ink);border-radius:7px;overflow:hidden;min-width:40px}
 .dmgrow .bar i{display:block;height:100%;background:var(--water)}
 .dmgrow .v{width:64px;text-align:right;font-size:13px;font-weight:900;flex:none}
+.medal{display:inline-block;flex:none;width:20px;height:20px;border-radius:50%;border:2px solid var(--ink);vertical-align:middle;background:#e9e3d8;position:relative}
+.medal.m0{background:transparent;border-style:dashed;border-color:#9aa6b5}
+.medal.m1{background:radial-gradient(circle at 35% 30%,#ffe2c4,#d98c4a 55%,#9a5a26)}
+.medal.m2{background:radial-gradient(circle at 35% 30%,#ffffff,#cfd8e3 55%,#8d9bb0)}
+.medal.m3{background:radial-gradient(circle at 35% 30%,#fff8d0,#ffc23a 55%,#c98a00)}
+.medal.big{width:52px;height:52px;border-width:3px;box-shadow:0 3px 0 var(--ink)}
+.medal.big::after{content:'';position:absolute;inset:9px;border-radius:50%;border:2px solid rgba(31,51,80,.35)}
+.medalbox{display:flex;align-items:center;gap:12px;background:#fff;border:3px solid var(--ink);border-radius:14px;padding:10px 12px;margin:10px 0}
+.medalbox.new{background:#fff3c4}
+.medalbox b{display:block;font-size:22px;line-height:1.1}
+.medalbox span{display:block;font-size:13px;color:var(--ink2);line-height:1.3}
+.bonuslist{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.bonusrow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:2px solid var(--ink);border-radius:12px;padding:6px 10px}
+.bonusrow div{min-width:0}
+.bonusrow b{display:block;font-size:14px;font-weight:900}
+.bonusrow span{display:block;font-size:12px;color:var(--ink2);line-height:1.25}
+.bonusrow em{flex:none;font-style:normal;font-weight:900;font-size:15px;color:#178a5a;white-space:nowrap}
+.menurow{display:flex;gap:14px}
+.menurow .btn{flex:1 1 0;min-width:0;padding:8px 10px}
+.statgrid{grid-template-columns:repeat(auto-fill,minmax(min(100%,140px),1fr));margin-top:0}
+.statgrid .stat b{font-size:22px}
+.beastsec{margin:0 0 14px}
+.beasth{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 6px;color:#fff;text-shadow:0 2px 0 var(--ink)}
+.beasth h4{margin:0;font-family:'Luckiest Guy','Arial Rounded MT Bold',sans-serif;font-weight:400;letter-spacing:.03em;font-size:18px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.beasth span{flex:none;font-size:13px;font-weight:900}
+.beasth.done span{color:#ffc23a}
+.beastgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,150px),1fr));gap:8px}
+.beast{display:flex;align-items:center;gap:8px;background:var(--enamel);border:3px solid var(--ink);border-radius:14px;padding:6px 8px;box-shadow:0 3px 0 var(--ink);min-width:0;min-height:56px}
+.beast canvas{width:44px;height:44px;flex:none;background:#e3f6fb;border-radius:10px}
+.beast.boss{background:#f3e9ff}
+.beast.unk{background:#e9e3d8}
+.beast.unk canvas{filter:brightness(0) opacity(.4);background:none}
+.beast .bt{min-width:0;display:flex;flex-direction:column;line-height:1.15}
+.beast .bt b{font-size:13px;font-weight:900;overflow-wrap:anywhere}
+.beast .bt span{font-size:12px;font-weight:900;color:#178a5a}
+.beast.unk .bt span{color:#8a7f70}
+.beast .bt i{font-style:normal;font-size:10px;font-weight:900;color:#fff;background:#8b6cc0;border-radius:5px;padding:0 5px;align-self:flex-start;margin-top:2px}
+.topgrime{margin:10px 0}
+.topgrime h4{margin:0 0 6px;font-size:14px;font-weight:900}
+.tglist{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,130px),1fr));gap:6px}
+.tgi{display:flex;align-items:center;gap:6px;background:#fff;border:2px solid var(--ink);border-radius:10px;padding:3px 8px 3px 4px;min-width:0}
+.tgi canvas{width:28px;height:28px;flex:none}
+.tgi span{flex:1 1 auto;min-width:0;font-size:12px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tgi b{flex:none;font-size:13px;font-weight:900;color:#178a5a}
 .unlocknote{background:#fff3c4;border:3px solid var(--ink);border-radius:14px;padding:10px;margin:10px 0;font-weight:900;text-align:center}
 .endtitle{text-align:center;font-size:clamp(34px,9vw,56px);color:#fff;text-shadow:0 4px 0 var(--ink),3px 0 0 var(--ink),-3px 0 0 var(--ink),0 -3px 0 var(--ink),0 7px 0 var(--ink)}
 .endsub{text-align:center;color:#fff;font-weight:900;text-shadow:0 2px 0 var(--ink);margin:4px 0 12px}
@@ -212,6 +274,7 @@ h1,h2,h3{margin:0}
 .stagecard h3{font-size:20px;line-height:1.05}
 .stagecard p{margin:0;font-size:13px;line-height:1.3;color:var(--ink2)}
 .stagecard .rec{font-size:12px;font-weight:900;color:#178a5a}
+.stagecard .mrow{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:900;color:var(--ink2);margin-top:2px;line-height:1.2}
 .stagecard.sel{background:#fff3c4;box-shadow:0 4px 0 var(--ink),0 0 0 4px var(--duck)}
 .stagecard.locked{background:#e9e3d8}
 .stagecard.locked canvas{filter:grayscale(1) brightness(.75)}
@@ -260,13 +323,16 @@ h1,h2,h3{margin:0}
         <div class="lvbadge display" id="lvl">1</div>
         <div class="hpbar"><div id="hpfill"></div><div id="hptext">100</div></div>
       </div>
-      <div id="timer" class="display">0:00</div>
+      <div class="tcol">
+        <div id="timer" class="display">0:00</div>
+        <div id="bmeter" aria-hidden="true"><span id="bmlabel">NEXT BOSS</span><div class="bm"><i id="bmtime"></i><i id="bmfill"></i></div></div>
+      </div>
       <div class="hudright">
         <div class="killc"><i></i><span id="kills">0</span></div>
         <button id="pauseBtn" aria-label="Pause"><span></span><span></span></button>
       </div>
     </div>
-    <div id="slots"></div>
+    <div class="hudrow2"><div id="slots"></div><div id="combo" aria-hidden="true"><b id="combon">x0</b><span id="combom">COMBO</span></div></div>
     <div id="bossbar" class="hidden"><span id="bossname" class="display"></span><div class="bb"><div id="bossfill"></div></div></div>
   </div>
   <div id="hint"></div>
@@ -281,7 +347,7 @@ h1,h2,h3{margin:0}
       <div class="menu">
         <button class="btn big" id="bPlay">Play</button>
         <button class="btn blue" id="bDucks">Ducks</button>
-        <button class="btn alt" id="bArmory">Armory</button>
+        <div class="menurow"><button class="btn alt" id="bArmory">Armory</button><button class="btn alt" id="bStats">Stats</button></div>
         <button class="btn pink" id="bShop">Upgrades</button>
         <button class="btn alt" id="bSettings">Settings</button>
       </div>
@@ -295,6 +361,7 @@ h1,h2,h3{margin:0}
   <div id="scrStages" class="screen dim hidden">
     <div class="inner">
       <div class="topbar"><h2 class="display">Pick a Stage</h2><button class="btn alt small" id="bStagesBack">Back</button></div>
+      <p class="armintro" id="medalIntro"></p>
       <div class="stagegrid" id="stageGrid"></div>
     </div>
   </div>
@@ -307,6 +374,7 @@ h1,h2,h3{margin:0}
       <div class="selbar">
         <div class="stagebadge" id="stageBadge"><span id="stageBadgeText"></span><button class="btn alt" id="bStageChange">Change</button></div>
         <div class="duckinfo" id="duckInfo"></div>
+        <button class="btn alt small hidden" id="bMedalWear" aria-pressed="true"><span class="medal m3"></span><span id="medalWearTxt">Champion Medal: On</span></button>
         <div class="heat hidden" id="heatBox">
           <button class="btn alt small" id="heatDown" aria-label="Lower water temperature">-</button>
           <div class="hv" id="heatVal"></div>
@@ -336,6 +404,17 @@ h1,h2,h3{margin:0}
       <div class="armgrid" id="armWeapons"></div>
       <h3 class="display armh">Passives</h3>
       <div class="armgrid" id="armPassives"></div>
+    </div>
+  </div>
+
+  <!-- Stats: lifetime totals and the grime bestiary -->
+  <div id="scrStats" class="screen dim hidden">
+    <div class="inner">
+      <div class="topbar"><h2 class="display">Stats</h2><button class="btn alt small" id="bStatsBack">Back</button></div>
+      <div class="sumgrid statgrid" id="statTotals"></div>
+      <h3 class="display armh">Grime Bestiary</h3>
+      <p class="armintro" id="beastIntro"></p>
+      <div id="beastList"></div>
     </div>
   </div>
 
@@ -395,7 +474,10 @@ h1,h2,h3{margin:0}
       <div class="endsub" id="endSub"></div>
       <div class="panel">
         <div class="sumgrid" id="sumGrid"></div>
+        <div id="medalBox" class="medalbox hidden"></div>
+        <div id="bonusList" class="bonuslist hidden"></div>
         <div id="unlockNotes"></div>
+        <div id="topGrime" class="topgrime hidden"><h4>Top grime this run</h4><div id="topGrimeList" class="tglist"></div></div>
         <h3 class="display" style="font-size:20px;margin-top:8px">Damage by weapon</h3>
         <div id="dmgList"></div>
         <div class="row2">
@@ -458,6 +540,13 @@ h1,h2,h3{margin:0}
    Hot Spring(Geyser), Tide Pool(Captain Tentacles), Frozen Lake(Snow
    Globe), Sewer(Gator Below), Grime Factory(Grime Machine, 3 phases).
 
+   Rewards for good play: a boss meter (kill XP) brings bosses early (never
+   later than the timer, >= 2:00 apart; the director ramps on "effective
+   time" run.et / run.dtime), combo XP multiplier, Speedy / No-hit boss chips, speed
+   and Untouchable chip bonuses, per-stage medals (bronze/silver/gold;
+   gold on all 10 = Champion Medal cosmetic). Stats screen: lifetime
+   totals + a per-stage grime bestiary (kill counts per type).
+
    Tech: fixed 60Hz timestep, pooled entities, uniform-grid spatial hash
    (linked list in typed arrays), pre-rendered enemy sprites incl. flash
    variants, caps on enemies/projectiles/particles/numbers, virtual camera
@@ -495,13 +584,30 @@ const RUN_BOSSES = [
   { t: 540, id: 'bigfizz' },
   { t: 720, id: 'king' }
 ];
+// --- rewards for playing well ---
+// Boss meter: kill XP fills it; when full the next boss comes early. The timer above stays the latest a boss can
+// arrive, the first boss never comes before 2:00 and there are always at least 2:00 between bosses.
+const BOSS_MIN_GAP = 120;
+const ET_DIFF = 0.7;                          // share of the boss-phase lead that the difficulty ramp follows
+const METER_XP = [700, 600, 1400, 2400];      // kill XP (enemy XP, not damage) that fills the meter, per boss
+function meterNeed(k){ return METER_XP[k] * (ST.idx === 0 ? 0.8 : 1 + 0.03 * ST.idx); }   // later stages drop a bit more XP
+const COMBO_WIN = 1.75;                       // seconds without a pop before the combo drops
+const COMBO_TIERS = [[30, 1.1], [100, 1.2], [250, 1.3], [500, 1.4], [1000, 1.5]];   // [combo, pearl XP multiplier]
+const MEDAL_T = { silver: 630, gold: 570 };    // clear times (final boss popped) for silver / gold
+const MEDAL_NAMES = ['', 'Bronze', 'Silver', 'Gold'];
+const BOSS_BONUS = [10, 15, 20, 30];
+const SPEEDY_PAR = [40, 45, 30, 45];            // "Speedy!": boss popped within this many seconds (x1.04 per stage, tougher bosses)           // chips for a Speedy or No-hit boss pop (3 mid-bosses, final boss)
+const UNTOUCH = [[5, 25, 'Untouchable'], [15, 10, 'Barely Scratched']];   // [max hits, chip bonus %, name], cleared runs
+function comboMul(c){ let m = 1; for (const t of COMBO_TIERS) if (c >= t[0]) m = t[1]; return m; }
+function medalFor(t){ return t <= MEDAL_T.gold ? 3 : t <= MEDAL_T.silver ? 2 : 1; }
+function timeBonusPct(t){ return Math.round(clamp((720 - t) / 60 * 10, 0, 40)); }
 
 /* ------------------------------ SAVE ------------------------------ */
 const SAVE_KEY = 'duckDefense.v1';
 function defaultSave(){
   return { v: 1, chips: 0, shop: {}, ducks: { sunny: true }, sel: 'sunny', heat: 0, maxHeat: 0,
-    stage: 0, stageMax: 0, stageRec: {}, trueWins: 0,
-    stats: { kills: 0, runs: 0, wins: 0, bestTime: 0, bestLevel: 0, bestKills: 0, bosses: {}, evolved: 0 },
+    stage: 0, stageMax: 0, stageRec: {}, trueWins: 0, medals: {}, cosm: { medal: false, wear: true }, seen: {},
+    stats: { kills: 0, runs: 0, wins: 0, bestTime: 0, bestLevel: 0, bestKills: 0, bosses: {}, evolved: 0, byType: {}, chipsTotal: 0, playTime: 0 },
     settings: { sound: true, music: true, shake: true, nums: true, follow: false, gfx: 'auto', ctrl: 'float', ctrlPos: 'center', ctrlSize: 'M' } };
 }
 function mergeInto(base, o){
@@ -531,7 +637,13 @@ function migrateSave(s){
     s.stageMax = 1;
     if (!s.stageRec.tub) s.stageRec.tub = { best: Math.max(720, s.stats.bestTime | 0), clears: s.stats.wins };
   }
-  for (const k in s.stageRec){ const r = s.stageRec[k]; if (!r || typeof r !== 'object') delete s.stageRec[k]; else { r.best = +r.best || 0; r.clears = +r.clears || 0; } }
+  for (const k in s.stageRec){ const r = s.stageRec[k]; if (!r || typeof r !== 'object') delete s.stageRec[k]; else { r.best = +r.best || 0; r.clears = +r.clears || 0; r.fast = +r.fast || 0; } }
+  // kill counts per grime type (added later; old saves start from zero)
+  for (const k in s.stats.byType){ const n = Math.floor(+s.stats.byType[k]) || 0; if (n > 0) s.stats.byType[k] = n; else delete s.stats.byType[k]; }
+  for (const k in s.stats.bosses){ s.stats.bosses[k] = Math.max(0, Math.floor(+s.stats.bosses[k]) || 0); }
+  // medals (added later): stages cleared before medals existed count as bronze
+  for (const k in s.medals){ const m = Math.floor(+s.medals[k]) || 0; if (m > 0) s.medals[k] = Math.min(3, m); else delete s.medals[k]; }
+  for (const k in s.stageRec) if (s.stageRec[k].clears > 0 && !(s.medals[k] >= 1)) s.medals[k] = 1;
   s.stageMax = clamp(Math.floor(s.stageMax) || 0, 0, 9);
   s.stage = clamp(Math.floor(s.stage) || 0, 0, s.stageMax);
   return s;
@@ -2473,6 +2585,16 @@ function drawDuck(g, duck, s, opt){
       g.fillStyle = '#fff'; for (const [sx, sy, sz] of [[-0.6, -0.6, 0.12], [1.05, -1.0, 0.1], [-0.2, -1.15, 0.08]]){ star(g, sx * s, sy * s, sz * s); }
       break;
   }
+  if (opt.medal) drawChampionMedal(g, s, lw);
+}
+// Champion Medal: reward for gold on every stage, worn by any duck
+function wearsMedal(){ return !!(SAVE.cosm.medal && SAVE.cosm.wear); }
+function drawChampionMedal(g, s, lw){
+  g.strokeStyle = '#e8343a'; g.lineWidth = s * 0.17; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(s * 0.08, -s * 0.08); g.lineTo(s * 0.5, s * 0.3); g.lineTo(s * 0.9, -s * 0.14); g.stroke();
+  g.fillStyle = '#ffb000'; g.strokeStyle = INK; g.lineWidth = lw * 0.9;
+  g.beginPath(); g.arc(s * 0.5, s * 0.46, s * 0.29, 0, TAU); g.fill(); g.stroke();
+  g.fillStyle = '#fff6c2'; star(g, s * 0.5, s * 0.46, s * 0.18);
 }
 function star(g, x, y, r){
   g.beginPath(); for (let i = 0; i < 8; i++){ const a = i * Math.PI / 4; const rr = i % 2 ? r * 0.35 : r; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill();
@@ -2579,7 +2701,7 @@ function iconCanvas(id, cssSize){
 }
 function duckCanvas(duck, cssSize){
   const S = Math.ceil(cssSize * 2); const c = mkCanvas(S, S); const g = c.getContext('2d');
-  g.translate(S * 0.46, S * 0.6); drawDuck(g, duck, S * 0.3, {}); return c;
+  g.translate(S * 0.46, S * 0.6); drawDuck(g, duck, S * 0.3, { medal: wearsMedal() }); return c;
 }
 
 /* ------------------------------ RUN STATE ------------------------------ */
@@ -2679,6 +2801,8 @@ function newRun(duckId){
     dmgBy: {}, heat: SAVE.heat, won: false, over: false, evolvedCount: 0,
     hintStage: 0, moved: 0, hintT: 0, firstPearl: false, overtime: 0, chests: 0, levelFlash: 0,
     elitesKilled: 0, tookDamage: 0, stage: ST.idx, trueWin: false,
+    et: 0, dtime: 0, meter: 0, phaseStart: 0, phaseEt0: 0, bossDue: 0, bossTimes: [], bossLive: false, phaseXp: [0, 0, 0, 0],
+    killsBy: {}, hits: 0, combo: 0, comboT: 0, comboBest: 0, speedy: 0, nohit: 0, bossBonus: 0, bossLog: [],
     mod: {}, pmul: 1, pushX: 0, pushY: 0, yank: null, bossPull: null, darkK: 0, hz: {}, sprays: [], tideY: WORLD.h, vortex: null, rot: -1
   };
   const T = duck.t, sh = SAVE.shop;
@@ -2754,8 +2878,8 @@ function ringFx(x, y, r0, r1, life, col, w){
   if (fx.length > 120) return;
   fx.push({ k: 'ring', x, y, r0, r1, t: 0, life, col, w: w || 4 });
 }
-function dmgNum(x, y, v, crit, col){
-  if (!SAVE.settings.nums) return;
+function dmgNum(x, y, v, crit, col, force){
+  if (!SAVE.settings.nums && !force) return;
   if (nums.length >= MAX_NUMS){ const o = nums.shift(); numfree.push(o); }
   const n = numfree.pop() || {};
   n.x = x + rand(-6, 6); n.y = y - 10; n.vy = -60; n.v = typeof v === 'number' ? Math.round(v) : v; n.t = 0; n.life = typeof v === 'number' ? (crit ? 0.8 : 0.6) : 1.2; n.crit = crit; n.col = col || null;
@@ -2788,7 +2912,7 @@ function dropPickup(kind, x, y, v){
 
 /* ------------------------------ ENEMIES ------------------------------ */
 function diffMul(){
-  const t = run.time, h = run.heat, S = ST.mul;
+  const t = run.dtime, h = run.heat, S = ST.mul;
   // later stages start only a little tougher and ramp up to their full HP/damage bonus by 8 minutes
   const ramp = Math.min(1, t / 480), shp = 1 + (S.hp - 1) * (0.25 + 0.75 * ramp), sdm = 1 + (S.dmg - 1) * (0.3 + 0.7 * ramp);
   return {
@@ -2798,7 +2922,7 @@ function diffMul(){
   };
 }
 // stage hazards (icicles, spray...) hit modestly and scale gently
-function hdm(){ return (1 + run.time / 900) * (1 + 0.12 * run.heat) * (1 + 0.06 * ST.idx); }
+function hdm(){ return (1 + run.dtime / 900) * (1 + 0.12 * run.heat) * (1 + 0.06 * ST.idx); }
 function spawnEnemy(type, x, y, opt){
   if (elist.length >= MAX_ENEMIES && !(opt && opt.force)) return null;
   const T = ETYPES[type]; const D = diffMul();
@@ -2834,7 +2958,7 @@ function spawnPos(extra){
 }
 function pickType(){
   if (ST.idx > 0) return pickStageType();
-  const t = run.time, m = t / 60;
+  const t = run.dtime, m = t / 60;
   const w = [['suds', Math.max(3, 10 - m * 0.6)]];
   if (t > 25) w.push(['bubble', 2]);
   if (t > 40) w.push(['sponge', 2.5 + m * 0.7]);
@@ -2847,7 +2971,7 @@ function pickType(){
 }
 // later stages: the classic grime (recoloured, a bit thinner) plus the stage's two new types
 function pickStageType(){
-  const t = run.time, m = t / 60, A = ST.newE[0], B = ST.newE[1];
+  const t = run.dtime, m = t / 60, A = ST.newE[0], B = ST.newE[1];
   const w = [['suds', Math.max(2, 7 - m * 0.5)]];
   const wa = ST.wA || 1, wb = ST.wB || 1, tb = ST.tB || 55;
   if (t > 12) w.push([A, (2.2 + m * 0.5) * wa]);
@@ -2872,19 +2996,43 @@ function addFresh(w, t, m){
     w.push([k, (i ? 0.7 + m * 0.18 : 0.9 + m * 0.2) / Math.sqrt(grp)]);
   }
 }
+// "effective time": what the spawn director, enemy scaling and hazards see. It equals the real clock unless the
+// boss meter runs ahead; then it moves through the current boss phase as fast as the meter, so an early 9:00 boss
+// still comes with 9:00-level grime around it.
+function updateEt(){
+  const nb = RUN_BOSSES[run.bossIdx], since = run.time - run.phaseStart;
+  let e;
+  if (nb){
+    const span = nb.t - run.phaseEt0, real = Math.max(1, nb.t - run.phaseStart);
+    const p = Math.min(1, Math.max(since / real, run.meter * Math.min(1, since / BOSS_MIN_GAP)));
+    e = run.phaseEt0 + span * p;
+  } else e = run.phaseEt0 + since;
+  if (e > run.et) run.et = e;
+  // difficulty follows the boss phase most of the way, so an early boss still meets fitting grime, but a fast
+  // player who has had less time to level up gets a little slack
+  run.dtime = run.time + ET_DIFF * (run.et - run.time);
+}
 function director(dt){
-  const t = run.time, h = run.heat;
-  // boss schedule
+  const t = run.dtime, h = run.heat;
+  // boss schedule: the timer (RUN_BOSSES) is the latest a boss arrives; a full boss meter brings it earlier
   const nb = RUN_BOSSES[run.bossIdx];
   if (nb){
-    const id = run.bossIdx < 3 ? ST.mids[run.bossIdx] : ST.final;
-    if (t >= nb.t - 4 && run.bossWarned !== run.bossIdx){
+    const id = run.bossIdx < 3 ? ST.mids[run.bossIdx] : ST.final, now = run.time;
+    if (!run.bossDue && run.meter >= 1) run.bossDue = Math.min(nb.t, Math.max(run.phaseStart + BOSS_MIN_GAP, now + 4));
+    const due = run.bossDue ? Math.min(run.bossDue, nb.t) : nb.t;
+    if (now >= due - 4 && run.bossWarned !== run.bossIdx){
       run.bossWarned = run.bossIdx; Snd.play('warn');
-      showBanner(ename(id), id === ST.final ? 'The final boss approaches!' : 'is coming!', true);
+      showBanner(ename(id), id === ST.final ? 'The final boss approaches!' : due < nb.t - 1 ? 'is coming early!' : 'is coming!', true);
     }
-    if (t >= nb.t){ spawnBoss(id); run.bossIdx++; }
+    if (now >= due){
+      spawnBoss(id); run.bossTimes.push(now);
+      run.phaseStart = now; run.phaseEt0 = nb.t; if (run.et < nb.t) run.et = nb.t;
+      run.dtime = run.time + ET_DIFF * (run.et - run.time);
+      run.meter = 0; run.bossDue = 0; run.bossIdx++;
+    }
   }
   const bossAlive = run.bosses.some(b => !b.dead);
+  run.bossLive = bossAlive;
   let rate = (0.9 + t * 0.02 + Math.max(0, t - 360) * 0.012) * (1 + 0.12 * h) * ST.mul.rate;
   if (t > 720) rate *= 1 + (t - 720) / 60 * 0.6;
   // once the first boss has arrived the tub keeps a calmer pace. (The original game got this pacing
@@ -2939,6 +3087,7 @@ function spawnBoss(id){
   const e = spawnEnemy(id, x, y, { force: true, mid, hpMul: mid && !ETYPES[id].mb ? (ST.midHp ? ST.midHp[Math.max(0, ST.mids.indexOf(id))] : 0.3) : 1 });
   if (!e) return;
   e.spawnT = 0.9; e.state = 0; e.t = 2.5;
+  e.bornT = run.time; e.hits0 = run.hits;
   run.bosses.push(e);
   Snd.play('roar'); addShake(8);
   const esc = id === 'king' ? 'loofah' : id === ST.final ? ST.escort : null;
@@ -2963,13 +3112,17 @@ const DEATH_COL = { suds: '#ffffff', bubble: '#bfefff', sponge: '#ffd84d', fizze
 function killEnemy(e, src){
   if (e.dead) return;
   e.dead = true; run.kills++;
+  run.killsBy[e.type] = (run.killsBy[e.type] | 0) + 1;
   const T = ETYPES[e.type];
   if (e.strk && !e.strk.fired) e.strk.dead = true;   // popping a grime cancels its telegraphed attack
   // drops
   if (e.boss){
     bossDeath(e); return;
   }
-  let xp = e.xp;
+  // combo (quick pops in a row) multiplies pearl XP; kill XP also fills the boss meter
+  run.combo++; run.comboT = COMBO_WIN; if (run.combo > run.comboBest) run.comboBest = run.combo;
+  if (run.bossIdx < 4){ run.phaseXp[run.bossIdx] += e.xp; if (!run.bossDue && !run.bossLive) run.meter = Math.min(1, run.meter + e.xp / meterNeed(run.bossIdx)); }
+  let xp = e.xp * comboMul(run.combo);
   if (xp >= 20) { dropPickup('pearl', e.x, e.y, Math.round(xp * 0.6)); dropPickup('pearl', e.x, e.y, Math.round(xp * 0.4)); }
   else dropPickup('pearl', e.x, e.y, xp);
   const r = Math.random();
@@ -2987,13 +3140,13 @@ function killEnemy(e, src){
   switch (e.type){
     case 'grease': addZone('grease', e.x, e.y, 46, 9); break;
     case 'fatberg': for (let i = 0; i < 3; i++){ const a = i / 3 * TAU + rand(0, 1); const s = spawnEnemy('roach', clamp(e.x + Math.cos(a) * 16, 10, WORLD.w - 10), clamp(e.y + Math.sin(a) * 16, 10, WORLD.h - 10), { instant: true }); if (s){ s.kx = Math.cos(a) * 220; s.ky = Math.sin(a) * 220; } } break;
-    case 'tablet': if (e.det) booms.push({ x: e.x, y: e.y, rad: 92 * (e.elite ? 1.3 : 1), dmg: 34 + run.time * 0.06, src: 'fizz', delay: 0, hurtP: 0, col: '#4fb4e8' }); break;
+    case 'tablet': if (e.det) booms.push({ x: e.x, y: e.y, rad: 92 * (e.elite ? 1.3 : 1), dmg: 34 + run.dtime * 0.06, src: 'fizz', delay: 0, hurtP: 0, col: '#4fb4e8' }); break;
     case 'pod': if (Math.hypot(player.x - e.x, player.y - e.y) > 110) for (let i = 0; i < 5; i++){ const a = i / 5 * TAU + rand(0, 1); enemyShot('goo', e.x, e.y, Math.cos(a) * 95, Math.sin(a) * 95, 8, e.dmg * 0.8, 3.2); } break;
     case 'slime': if (!e.small){ for (let i = 0; i < 2; i++){ const a = rand(0, TAU); const s = spawnEnemy('slime', clamp(e.x + Math.cos(a) * 14, 10, WORLD.w - 10), clamp(e.y + Math.sin(a) * 14, 10, WORLD.h - 10), { instant: true, small: true, elite: e.elite }); if (s){ s.kx = Math.cos(a) * 200; s.ky = Math.sin(a) * 200; } } } break;
   }
   if (parts.length < partCap() - 2) part(e.x, e.y, 0, 0, 0.25, e.r * 1.2, '#ffffff', 2);
   Snd.play(e.r > 18 ? 'bigpop' : 'pop', 1 + (24 - e.r) / 40);
-  if (e.type === 'fizzer') booms.push({ x: e.x, y: e.y, rad: 78 * (e.elite ? 1.4 : 1), dmg: 30 + run.time * 0.05, src: 'fizz', delay: 0.06, hurtP: e.state === 2 ? e.dmg * 1.6 : 0, col: '#ff9ec7' });
+  if (e.type === 'fizzer') booms.push({ x: e.x, y: e.y, rad: 78 * (e.elite ? 1.4 : 1), dmg: 30 + run.dtime * 0.05, src: 'fizz', delay: 0.06, hurtP: e.state === 2 ? e.dmg * 1.6 : 0, col: '#ff9ec7' });
   if (e.type === 'sock'){
     const n = e.elite ? 5 : 2 + (Math.random() < 0.5 ? 1 : 0);
     for (let i = 0; i < n; i++){ const a = i / n * TAU + rand(0, 1); const l = spawnEnemy('lint', clamp(e.x + Math.cos(a) * 12, 10, WORLD.w - 10), clamp(e.y + Math.sin(a) * 12, 10, WORLD.h - 10), { instant: true }); if (l){ l.kx = Math.cos(a) * 220; l.ky = Math.sin(a) * 220; } }
@@ -3012,9 +3165,17 @@ function bossDeath(e){
   const total = ETYPES[e.type].xp;
   for (let i = 0; i < 12 && total > 0; i++){ const p = dropPickup('pearl', e.x, e.y, Math.ceil(total / 12)); if (p){ const a = i / 12 * TAU; p.vx = Math.cos(a) * 260; p.vy = Math.sin(a) * 260; } }
   for (let i = 0; i < 6; i++) dropPickup('chip', e.x, e.y, 4);
+  // fast pop and no-hit bonuses (chips straight into the run's haul)
+  const bi = e.type === ST.final ? 3 : clamp(ST.mids.indexOf(e.type), 0, 2);
+  const fight = run.time - (e.bornT || 0), par = SPEEDY_PAR[bi] * (1 + 0.04 * ST.idx) * (1 + 0.35 * run.heat);   // boss HP grows with stage and water heat
+  const fast = fight <= par, clean = run.hits === e.hits0;
+  let bonus = 0; if (fast){ run.speedy++; bonus += BOSS_BONUS[bi]; } if (clean){ run.nohit++; bonus += BOSS_BONUS[bi]; }
+  run.bossLog.push({ id: e.type, t: Math.round(fight * 10) / 10, par: Math.round(par), fast, clean });
+  const tag = fast && clean ? 'Speedy & No-hit!' : fast ? 'Speedy!' : clean ? 'No-hit!' : '';
+  if (bonus){ run.chipsFound += bonus; run.bossBonus += bonus; rewardText(tag + ' +' + bonus + ' chips'); Snd.play('chip'); }
   if (e.type === ST.final){
     // clear the arena: everything pops
-    for (const o of elist) if (!o.dead && o !== e){ o.dead = true; burst(o.x, o.y, 4, DEATH_COL[o.type] || ETYPES[o.type].col || '#fff', 140, 5, 0.4); run.kills++; }
+    for (const o of elist) if (!o.dead && o !== e){ o.dead = true; burst(o.x, o.y, 4, DEATH_COL[o.type] || ETYPES[o.type].col || '#fff', 140, 5, 0.4); run.kills++; run.killsBy[o.type] = (run.killsBy[o.type] | 0) + 1; }
     eplist.length = 0; strikes.length = 0; run.sprays.length = 0; run.yank = null; run.bossPull = null;
     run.won = true;
     run.winT = 2.2;
@@ -3023,7 +3184,7 @@ function bossDeath(e){
   } else {
     const c = dropPickup('chest', e.x, e.y, ETYPES[e.type].chest || 3);
     if (c){ c.boss = true; c.vx = 0; c.vy = 0; }
-    showBanner('Boss Popped!', 'Grab the treasure chest', false);
+    showBanner(tag || 'Boss Popped!', bonus ? '+' + bonus + ' chips · grab the chest' : 'Grab the treasure chest', false);
   }
 }
 
@@ -3033,7 +3194,7 @@ function hurtPlayer(d, src){
   d = Math.max(1, (d - player.armor) * player.dmgTaken);
   if (DBG.on && src) DBG.hurt[src] = (DBG.hurt[src] || 0) + d;
   player.hp -= d; player.inv = player.invHit; player.hurtT = 0.3; player.squash = 0.4;
-  run.tookDamage += d;
+  run.tookDamage += d; run.hits++;
   dmgNum(player.x, player.y - 20, d, false, '#ff5a5f');
   Snd.play('hurt'); addShake(4);
   burst(player.x, player.y, 6, '#ffd23f', 140, 5, 0.35);
@@ -4045,7 +4206,7 @@ function initStage(){
 }
 // called before the player moves: works out slow/heal/push for this step and runs stage timers
 function updateStage(dt){
-  const p = player, M = run.mod, Hz = run.hz, t = run.time;
+  const p = player, M = run.mod, Hz = run.hz, t = run.dtime;   // difficulty time: hazards ramp with boss progress
   run.pmul = 1; run.pushX = 0; run.pushY = 0;
   let heal = 0;
   // factory: rotate one extra hazard every minute
@@ -4078,9 +4239,9 @@ function updateStage(dt){
   if (M.deep && p.x > DEEP_X) run.pmul = Math.min(run.pmul, 0.72);
   // tide
   if (M.tide){
-    const old = run.tideY; run.tideY = WORLD.h * (0.78 + 0.22 * Math.cos(t / 90 * TAU));
+    const old = run.tideY; run.tideY = WORLD.h * (0.78 + 0.22 * Math.cos(run.time / 90 * TAU));
     const dir = run.tideY < old ? -1 : 1;
-    if (dir !== Hz.tideDir && t > 1){ Hz.tideDir = dir; showHint(dir < 0 ? 'The tide is going out! Sand ahead.' : 'The tide is coming back in.', 2.6); }
+    if (dir !== Hz.tideDir && run.time > 1){ Hz.tideDir = dir; showHint(dir < 0 ? 'The tide is going out! Sand ahead.' : 'The tide is coming back in.', 2.6); }
     if (p.y > run.tideY - 6){ run.pmul = Math.min(run.pmul, 0.6); run.pushY -= 75; }
   }
   // vortex
@@ -4717,6 +4878,8 @@ function updatePickups(dt){
   let j = 0; for (let i = 0; i < pickups.length; i++){ const k = pickups[i]; if (k.dead) pkfree.push(k); else pickups[j++] = k; }
   pickups.length = j;
 }
+// reward texts over the duck (cached sprites like damage numbers; shown even with damage numbers off)
+function rewardText(txt, col){ dmgNum(player.x, player.y - player.r - 22, txt, false, col || '#ffc23a', true); }
 let pearlPitch = 0, pearlPitchT = 0;
 function collect(k){
   k.dead = true;
@@ -4766,6 +4929,8 @@ function compactEnemies(){
 }
 function step(dt){
   run.time += run.won ? 0 : dt;
+  if (!run.won) updateEt();
+  if (run.comboT > 0){ run.comboT -= dt; if (run.comboT <= 0) run.combo = 0; }
   if (run.won){ run.winT -= dt; if (run.winT <= 0 && !run.over){ endRun(true); return; } }
   if (!player.alive && player.deadT > 1.5 && !run.over){ endRun(false); return; }
   if (pearlPitchT > 0) pearlPitchT -= dt;
@@ -4793,7 +4958,7 @@ function step(dt){
   if (cam.vh > WORLD.h + mxw * 2) cam.y = WORLD.h / 2; else cam.y = clamp(cam.y, cam.vh / 2 - mxw, WORLD.h - cam.vh / 2 + mxw);
   if (shake > 0) shake = Math.max(0, shake - dt * 40);
   // music heat: time into the run plus how crowded the arena is (layers fade in as it rises)
-  Snd.heatT = Math.min(1, clamp(run.time / 540, 0, 1) * 0.75 + clamp((elist.length - 15) / 100, 0, 1) * 0.35);
+  Snd.heatT = Math.min(1, clamp(run.et / 540, 0, 1) * 0.75 + clamp((elist.length - 15) / 100, 0, 1) * 0.35);
 }
 
 /* ------------------------------ LEVEL UP / CARDS ------------------------------ */
@@ -4869,7 +5034,7 @@ function openLevelUp(){
     // everything is maxed: just hand out the treat and chips, no card screen, no countdown
     run.pendingLv--;
     player.hp = Math.min(player.maxHp, player.hp + 30); run.chipsFound += 15;
-    Snd.play('chip'); dmgNum(player.x, player.y - player.r - 18, '+15 chips', false, '#ffc23a');
+    Snd.play('chip'); rewardText('+15 chips');
     return;
   }
   state = 'level'; releaseInput();
@@ -4914,8 +5079,23 @@ function reroll(){
 
 /* ------------------------------ CHEST ------------------------------ */
 let chestQueue = [];
+function chestUseful(){
+  if (run.weapons.some(canEvolve)) return true;
+  for (const w of run.weapons) if (!w.evo && w.lv < 5) return true;
+  for (const p of run.passOrder) if (plv(p) < 5) return true;
+  return false;
+}
 function openChest(n, boss){
   run.chests++;
+  if (!chestUseful()){
+    // everything is maxed: the chest could only give filler, so hand it out right away (no screen, no countdown)
+    const c = 20 * n; run.chipsFound += c;
+    if (boss) player.hp = Math.min(player.maxHp, player.hp + player.maxHp * 0.3);
+    Snd.play('chip'); Snd.play('heal');
+    rewardText('Treasure! +' + c + ' chips');
+    burst(player.x, player.y, 14, '#ffc23a', 180, 6, 0.6);
+    return;
+  }
   const results = [];
   for (let i = 0; i < n; i++){
     const evoW = run.weapons.find(canEvolve);
@@ -5459,7 +5639,7 @@ function drawDuckEntity(p, t){
   sx += sp * 0.06; sy -= sp * 0.04;
   ctx.rotate(Math.sin(p.bob * 0.7) * 0.06 + (p.vy / p.speed) * 0.12 * p.face);
   ctx.scale(sx * p.face, sy);
-  drawDuck(ctx, run.duck, p.r, { blink: p.blinkT < 0, hurt: p.hurtT > 0, flap: Math.sin(p.bob * 2) * 0.25 * sp });
+  drawDuck(ctx, run.duck, p.r, { blink: p.blinkT < 0, hurt: p.hurtT > 0, flap: Math.sin(p.bob * 2) * 0.25 * sp, medal: run.medal });
   ctx.restore();
   drawRing();
   function drawRing(){
@@ -5972,10 +6152,34 @@ function setWidth(id, v){ v = Math.round(clamp(v, 0, 1) * 200) / 200; if (hudCac
 function updateHUD(){
   setWidth('xpfill', run.xp / run.need);
   setWidth('hpfill', Math.max(0, player.hp / player.maxHp));
-  setText('hptext', Math.ceil(Math.max(0, player.hp)) + ' / ' + player.maxHp);
+  setText('hptext', Math.ceil(Math.max(0, player.hp)) + (W < 400 ? '/' : ' / ') + player.maxHp);
   setText('lvl', 'Lv ' + run.level);
   setText('timer', fmtTime(run.time));
   setText('kills', fmtNum(run.kills));
+  // boss meter: dim fill = the timer's progress to the next boss, orange = the kill meter (whichever is full first wins)
+  const nb = RUN_BOSSES[run.bossIdx], showM = !!nb && !run.bossLive && !run.won && player.alive;
+  if (hudCache.bmShow !== showM){ hudCache.bmShow = showM; $('bmeter').style.visibility = showM ? 'visible' : 'hidden'; }
+  if (showM){
+    const since = run.time - run.phaseStart, real = Math.max(1, nb.t - run.phaseStart);
+    const due = run.bossDue ? Math.min(run.bossDue, nb.t) : nb.t, soon = run.time >= due - 4;
+    setWidth('bmtime', since / real); setWidth('bmfill', run.meter);
+    const st = soon ? 2 : run.bossDue ? 1 : 0;
+    if (hudCache.bmSt !== st){ hudCache.bmSt = st; const m = $('bmeter'); m.classList.toggle('full', st > 0); m.classList.toggle('due', st === 2); }
+    setText('bmlabel', st === 2 ? 'INCOMING!' : st === 1 ? 'BOSS READY' : run.bossIdx === 3 ? 'FINAL BOSS' : 'NEXT BOSS');
+    if (!SAVE.seen.meter && run.hintStage >= 3 && hintTimer <= 0 && since > 12){ SAVE.seen.meter = 1; persist(); showHint('Pop grime fast to fill the boss meter. Full meter = early boss!', 5); }
+  }
+  // combo: refreshed at most 10 times a second
+  if (clock - (hudCache.comboAt || 0) > 0.1 || (run.combo < 10) !== !!hudCache.comboOff){
+    hudCache.comboAt = clock;
+    const on = run.combo >= 10;
+    if (hudCache.comboOff !== !on){ hudCache.comboOff = !on; $('combo').style.visibility = on ? 'visible' : 'hidden'; }
+    if (on){
+      const m = comboMul(run.combo);
+      setText('combon', 'x' + run.combo); setText('combom', m > 1 ? 'COMBO XP×' + m.toFixed(1) : 'COMBO');
+      if (hudCache.comboHot !== (m > 1)){ hudCache.comboHot = m > 1; $('combo').classList.toggle('hot', m > 1); }
+      if (!SAVE.seen.combo && m > 1 && run.hintStage >= 3 && hintTimer <= 0){ SAVE.seen.combo = 1; persist(); showHint('Combo! Keep popping without a break for bonus XP.', 4); }
+    }
+  }
   const boss = run.bosses.find(b => !b.dead);
   if (boss){
     if (hudCache.boss !== boss.uid){ hudCache.boss = boss.uid; $('bossbar').classList.remove('hidden'); $('bossname').textContent = ename(boss.type); }
@@ -5996,7 +6200,7 @@ function buildSlots(){
 }
 
 /* ------------------------------ SCREENS ------------------------------ */
-const SCREENS = ['scrTitle', 'scrStages', 'scrDucks', 'scrShop', 'scrArmory', 'scrSettings', 'scrLevel', 'scrChest', 'scrPause', 'scrEnd'];
+const SCREENS = ['scrTitle', 'scrStages', 'scrDucks', 'scrShop', 'scrArmory', 'scrStats', 'scrSettings', 'scrLevel', 'scrChest', 'scrPause', 'scrEnd'];
 function setStage(i){
   i = clamp(i | 0, 0, STAGES.length - 1);
   if (ST !== STAGES[i]){ ST = STAGES[i]; deco.length = 0; }
@@ -6030,20 +6234,29 @@ function openDucks(from){
   state = 'menu'; duckFrom = from; setStage(SAVE.stage); renderDucks(); only('scrDucks');
   try { $('bStart').focus({ preventScroll: true }); } catch (e) {}
 }
+function goldCount(){ let n = 0; for (const st of STAGES) if ((SAVE.medals[st.id] | 0) >= 3) n++; return n; }
 function renderStages(){
   const g = $('stageGrid'); g.innerHTML = '';
+  $('medalIntro').textContent = SAVE.cosm.medal ? 'Gold on all ' + STAGES.length + ' stages. Champion Medal earned!'
+    : 'Gold medals: ' + goldCount() + '/' + STAGES.length + '. Gold on every stage earns the Champion Medal.';
   STAGES.forEach((st, i) => {
     const locked = i > SAVE.stageMax, rec = stageRec(st);
     const b = document.createElement('button'); b.className = 'stagecard' + (locked ? ' locked' : '') + (SAVE.stage === i ? ' sel' : '');
     b.setAttribute('aria-pressed', SAVE.stage === i ? 'true' : 'false');
     b.appendChild(stageThumb(st, 80));
     const d = document.createElement('div'); d.className = 'st';
-    d.innerHTML = '<span class="num"></span><h3 class="display"></h3><p></p><span class="rec"></span>';
+    d.innerHTML = '<span class="num"></span><h3 class="display"></h3><p></p><span class="rec"></span>' + (locked ? '' : '<span class="mrow"><span class="medal"></span><span class="mt"></span></span>');
     d.querySelector('.num').textContent = 'Stage ' + (i + 1) + (i === STAGES.length - 1 ? ' · Finale' : '');
     d.querySelector('h3').textContent = st.name;
     d.querySelector('p').textContent = locked ? 'Beat ' + STAGES[i - 1].name + ' to unlock.' : st.desc;
     d.querySelector('.rec').textContent = locked ? 'Locked' : rec.clears ? '✓ Cleared' + (rec.clears > 1 ? ' x' + rec.clears : '') + '  ·  Final boss: ' + ETYPES[st.final].name
       : rec.best ? 'Best: ' + fmtTime(rec.best) + ' survived' : 'Not played yet';
+    if (!locked){
+      const m = SAVE.medals[st.id] | 0;
+      d.querySelector('.mrow .medal').className = 'medal m' + m;
+      d.querySelector('.mt').textContent = (m ? MEDAL_NAMES[m] + (rec.fast ? ' · ' + fmtTime(rec.fast) : '') : 'No medal yet')
+        + (m === 3 ? '' : ' · ' + (m === 2 ? 'Gold' : m === 1 ? 'Silver' : 'Bronze') + (m === 0 ? ': clear it' : ' under ' + fmtTime(m === 2 ? MEDAL_T.gold : MEDAL_T.silver)));
+    }
     b.appendChild(d);
     b.addEventListener('click', () => {
       Snd.init();
@@ -6069,6 +6282,7 @@ function startRun(){
   if (SAVE.stage > SAVE.stageMax) SAVE.stage = SAVE.stageMax;
   setStage(SAVE.stage);
   newRun(SAVE.sel);
+  run.medal = wearsMedal();
   prebake();
   $('scrEnd').classList.remove('party');
   state = 'play'; only(null); $('hud').classList.remove('hidden');
@@ -6099,26 +6313,44 @@ function endRun(won){
   if (won) Snd.play('fanfare');
   const s = SAVE.stats;
   const bossCount = Object.keys(run.bossKills).length;
-  let chips = Math.floor(run.time / 10) + Math.floor(run.kills / 25) + run.level * 2 + bossCount * 25 + run.chipsFound + (won ? 150 : 0);
+  // time chips count the effective time too, so bosses brought in early never cost chips
+  let chips = Math.floor(Math.max(run.time, run.et) / 10) + Math.floor(run.kills / 25) + run.level * 2 + bossCount * 25 + run.chipsFound + (won ? 150 : 0);
   chips = Math.round(chips * player.chipMul * (1 + 0.25 * run.heat) * ST.mul.chips);
-  const notes = [];
+  const notes = [], bonus = [], baseChips = chips;
+  if (won){
+    const tp = timeBonusPct(run.time);
+    if (tp > 0){ const c = Math.round(baseChips * tp / 100); chips += c; bonus.push(['Speed bonus', 'Cleared in ' + fmtTime(run.time), '+' + tp + '% · +' + c]); }
+    for (const u of UNTOUCH) if (run.hits <= u[0]){ const c = Math.round(baseChips * u[1] / 100); chips += c; bonus.push([u[2], 'Hit ' + run.hits + ' time' + (run.hits === 1 ? '' : 's') + ' all run', '+' + u[1] + '% · +' + c]); break; }
+  }
+  if (run.bossBonus){ const p = []; if (run.speedy) p.push('Speedy x' + run.speedy); if (run.nohit) p.push('No-hit x' + run.nohit); bonus.push(['Boss bonuses', p.join(' · '), '+' + run.bossBonus]); }
+  if (run.comboBest >= 25) bonus.push(['Best combo', 'XP up to x' + comboMul(run.comboBest).toFixed(1), 'x' + run.comboBest]);
+  // medals: bronze = clear, silver / gold = fast clears
+  let medal = 0, newMedal = false, oldMedal = SAVE.medals[ST.id] | 0;
+  if (won){
+    medal = medalFor(run.time);
+    if (medal > oldMedal){ SAVE.medals[ST.id] = medal; newMedal = true; }
+  }
   // per-stage records and unlocking
   const clearedBefore = stagesCleared();
   const rec = SAVE.stageRec[ST.id] || (SAVE.stageRec[ST.id] = { best: 0, clears: 0 });
   rec.best = Math.max(rec.best, Math.floor(run.time));
   const nextSt = STAGES[ST.idx + 1];
   if (won){
-    rec.clears++;
+    rec.clears++; rec.fast = rec.fast ? Math.min(rec.fast, Math.floor(run.time)) : Math.floor(run.time);
     if (nextSt && SAVE.stageMax < nextSt.idx){ SAVE.stageMax = nextSt.idx; notes.push('New stage unlocked: ' + nextSt.name + '!'); }
     const clearedNow = stagesCleared();
     if (clearedNow > clearedBefore){
       for (const id of NEW_WEAPONS){ const at = weaponUnlockAt(id); if (at > clearedBefore && at <= clearedNow) notes.push('New weapon unlocked: ' + WEAPONS[id].name + '! It can now show up on level-up cards.'); }
       for (const id in NEW_PASSIVES){ const at = NEW_PASSIVES[id]; if (at > clearedBefore && at <= clearedNow) notes.push('New passive unlocked: ' + PASSIVES[id].name + '!'); }
     }
+    if (newMedal && medal > 1) notes.unshift('New ' + MEDAL_NAMES[medal].toUpperCase() + ' medal on ' + ST.name + '!');
+    if (!SAVE.cosm.medal && STAGES.every(st => (SAVE.medals[st.id] | 0) >= 3)){ SAVE.cosm.medal = true; SAVE.cosm.wear = true; notes.unshift('Gold on every stage! You earned the Champion Medal. Your duck wears it now (toggle it on the duck screen).'); }
     if (run.trueWin){ if (!SAVE.trueWins){ chips += 500; notes.unshift('All ten stages sparkling clean! +500 bonus rubber chips. You are the Ultimate Duck!'); } SAVE.trueWins++; }
   }
   SAVE.chips += chips;
   s.kills += run.kills;
+  for (const k in run.killsBy) s.byType[k] = (s.byType[k] | 0) + run.killsBy[k];
+  s.chipsTotal = (s.chipsTotal || 0) + chips; s.playTime = (s.playTime || 0) + Math.floor(run.time);
   s.bestTime = Math.max(s.bestTime, Math.floor(run.time));
   s.bestLevel = Math.max(s.bestLevel, run.level);
   s.bestKills = Math.max(s.bestKills, run.kills);
@@ -6136,7 +6368,22 @@ function endRun(won){
   $('bAgain').classList.toggle('alt', !!showNext);
   const g = $('sumGrid'); g.innerHTML = '';
   const stat = (v, l) => { const d = document.createElement('div'); d.className = 'stat'; d.innerHTML = '<b></b><span></span>'; d.querySelector('b').textContent = v; d.querySelector('span').textContent = l; g.appendChild(d); };
-  stat(fmtTime(run.time), 'Survived'); stat(fmtNum(run.kills), 'Grime popped'); stat(run.level, 'Level'); stat('+' + chips, 'Rubber chips');
+  stat(fmtTime(run.time), won ? 'Clear time' : 'Survived'); stat(fmtNum(run.kills), 'Grime popped'); stat(run.level, 'Level'); stat('+' + chips, 'Rubber chips');
+  const mb = $('medalBox'); mb.innerHTML = ''; mb.classList.toggle('hidden', !won);
+  if (won){
+    const disc = document.createElement('span'); disc.className = 'medal big m' + medal; mb.appendChild(disc);
+    const tx = document.createElement('div'); tx.innerHTML = '<b class="display"></b><span></span>';
+    tx.querySelector('b').textContent = MEDAL_NAMES[medal] + ' medal' + (newMedal ? '!' : '');
+    tx.querySelector('span').textContent = (newMedal ? (oldMedal ? 'Upgraded from ' + MEDAL_NAMES[oldMedal] + '. ' : 'New for this stage. ') : 'Your best here: ' + MEDAL_NAMES[Math.max(oldMedal, medal)] + '. ')
+      + (medal === 1 ? 'Clear under ' + fmtTime(MEDAL_T.silver) + ' for silver.' : medal === 2 ? 'Clear under ' + fmtTime(MEDAL_T.gold) + ' for gold.' : 'The fastest duck in the tub!');
+    mb.appendChild(tx); mb.classList.toggle('new', newMedal);
+  }
+  const bl = $('bonusList'); bl.innerHTML = ''; bl.classList.toggle('hidden', !bonus.length);
+  for (const [n, d, v] of bonus){ const r = document.createElement('div'); r.className = 'bonusrow'; r.innerHTML = '<div><b></b><span></span></div><em></em>'; r.querySelector('b').textContent = n; r.querySelector('span').textContent = d; r.querySelector('em').textContent = v; bl.appendChild(r); }
+  if (newMedal) Snd.play('level');
+  const tg = $('topGrime'), topK = Object.keys(run.killsBy).sort((a, b) => run.killsBy[b] - run.killsBy[a]).slice(0, 4);
+  tg.classList.toggle('hidden', !topK.length); const tl = $('topGrimeList'); tl.innerHTML = '';
+  for (const k of topK){ const d = document.createElement('div'); d.className = 'tgi'; d.appendChild(beastIcon(k)); const n = document.createElement('span'); n.textContent = ETYPES[k].name.replace(/^The /, ''); d.appendChild(n); const b = document.createElement('b'); b.textContent = 'x' + fmtNum(run.killsBy[k]); d.appendChild(b); tl.appendChild(d); }
   const un = $('unlockNotes'); un.innerHTML = '';
   for (const n of notes){ const d = document.createElement('div'); d.className = 'unlocknote'; d.textContent = n; un.appendChild(d); }
   const dl = $('dmgList'); dl.innerHTML = '';
@@ -6179,6 +6426,8 @@ function renderDucks(){
   }
   const d = DUCK_BY_ID[SAVE.sel] || DUCKS[0];
   $('duckInfo').textContent = d.name + ' is ready to paddle!';
+  const mw = $('bMedalWear'); mw.classList.toggle('hidden', !SAVE.cosm.medal);
+  if (SAVE.cosm.medal){ $('medalWearTxt').textContent = 'Champion Medal: ' + (SAVE.cosm.wear ? 'On' : 'Off'); mw.setAttribute('aria-pressed', SAVE.cosm.wear ? 'true' : 'false'); }
   const st = STAGES[clamp(SAVE.stage, 0, SAVE.stageMax)];
   $('stageBadgeText').textContent = 'Stage ' + (st.idx + 1) + ': ' + st.name;
   const hb = $('heatBox');
@@ -6208,6 +6457,73 @@ function renderArmory(){
   const bw = $('armWeapons'), bp = $('armPassives'); bw.innerHTML = ''; bp.innerHTML = '';
   for (const id of WIDS){ const D = WEAPONS[id]; item(bw, id, D.name, D.desc[0], 'Evolves into ' + D.evoName + ' with ' + PASSIVES[D.evo].name, weaponUnlockAt(id)); }
   for (const id of PIDS){ const P = PASSIVES[id], ws = EVO_OF_PASSIVE[id] || []; item(bp, id, P.name, P.desc, ws.length ? 'Evolves ' + ws.map(w => WEAPONS[w].name).join(', ') : 'Boosts every weapon', passiveUnlockAt(id)); }
+}
+// ---- Stats screen + bestiary ----
+const BEAST_IC = new Map();   // type -> cached icon canvas (reused between renders)
+function beastIcon(k){
+  let c = BEAST_IC.get(k);
+  if (!c){
+    const T = ETYPES[k], r = T.r, size = Math.max(r * 2 + (r * 0.6 + 6) * 2, (T.span || 0) * r * 2 + 14), S = 88;
+    c = mkCanvas(S, S); const g = c.getContext('2d');
+    g.translate(S / 2, S / 2); g.scale(S / size, S / size);
+    try { drawEnemyShape(g, k, r); } catch (e) {}
+    BEAST_IC.set(k, c);
+  }
+  if (c.parentNode) c.parentNode.removeChild(c);
+  return c;
+}
+let BEAST_GROUPS = null;
+function beastGroups(){
+  if (BEAST_GROUPS) return BEAST_GROUPS;
+  const seen = {}, out = [];
+  for (const st of STAGES){
+    const l = [];
+    const add = k => { if (k && ETYPES[k] && !seen[k]){ seen[k] = 1; l.push(k); } };
+    if (st.idx === 0) for (const k of ['suds', 'bubble', 'sponge', 'fizzer', 'sock', 'lint', 'loofah', 'turret']) add(k);
+    for (const k of st.newE) add(k);
+    for (const k of st.fresh || []) add(k);
+    for (const k of stageTypes(st)) if (!ETYPES[k].boss) add(k);   // things the stage's bosses summon
+    for (const k of st.mids) add(k);
+    add(st.final);
+    out.push({ st, list: l });
+  }
+  return (BEAST_GROUPS = out);
+}
+function killCount(k){ const s = SAVE.stats; return Math.max(s.byType[k] | 0, ETYPES[k].boss ? (s.bosses[k] | 0) : 0); }
+function fmtPlay(sec){ const h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60; return h ? h + 'h ' + m + 'm' : m + 'm'; }
+function openStats(){ state = 'menu'; renderStats(); only('scrStats'); $('scrStats').scrollTop = 0; try { $('bStatsBack').focus({ preventScroll: true }); } catch (e) {} }
+function renderStats(){
+  const s = SAVE.stats, g = $('statTotals'); g.innerHTML = '';
+  let bosses = 0; for (const k in s.bosses) bosses += s.bosses[k] | 0;
+  const stat = (v, l) => { const d = document.createElement('div'); d.className = 'stat'; d.innerHTML = '<b></b><span></span>'; d.querySelector('b').textContent = v; d.querySelector('span').textContent = l; g.appendChild(d); };
+  stat(fmtNum(s.kills), 'Grime popped'); stat(fmtNum(bosses), 'Bosses popped'); stat(s.runs, 'Runs'); stat(s.wins, 'Wins');
+  stat(fmtTime(s.bestTime), 'Longest run'); stat(s.bestLevel, 'Best level'); stat(fmtNum(s.bestKills), 'Most pops in a run');
+  if (s.chipsTotal) stat(fmtNum(s.chipsTotal), 'Chips earned'); if (s.playTime) stat(fmtPlay(s.playTime), 'Time in the tub');
+  const box = $('beastList'); box.innerHTML = '';
+  let found = 0, total = 0;
+  for (const { st, list } of beastGroups()){
+    const sec = document.createElement('section'); sec.className = 'beastsec';
+    const locked = st.idx > SAVE.stageMax;
+    let n = 0; for (const k of list) if (killCount(k) > 0) n++;
+    found += n; total += list.length;
+    const h = document.createElement('div'); h.className = 'beasth'; h.innerHTML = '<h4></h4><span></span>';
+    h.querySelector('h4').textContent = (st.idx + 1) + '. ' + (locked ? '???' : st.name); h.querySelector('span').textContent = n + '/' + list.length + ' found';
+    if (n === list.length) h.classList.add('done');
+    sec.appendChild(h);
+    const grid = document.createElement('div'); grid.className = 'beastgrid';
+    for (const k of list){
+      const c = killCount(k), T = ETYPES[k], known = c > 0;
+      const it = document.createElement('div'); it.className = 'beast' + (known ? '' : ' unk') + (T.boss ? ' boss' : '');
+      it.appendChild(beastIcon(k));
+      const tx = document.createElement('div'); tx.className = 'bt';
+      const nm = document.createElement('b'); nm.textContent = known ? T.name : '???'; tx.appendChild(nm);
+      const ct = document.createElement('span'); ct.textContent = known ? 'x' + fmtNum(c) : (T.boss ? 'Boss' : 'Not found'); tx.appendChild(ct);
+      if (T.boss && known){ const tg = document.createElement('i'); tg.textContent = k === st.final ? 'Final boss' : 'Boss'; tx.appendChild(tg); }
+      it.appendChild(tx); grid.appendChild(it);
+    }
+    sec.appendChild(grid); box.appendChild(sec);
+  }
+  $('beastIntro').textContent = 'Discovered ' + found + ' of ' + total + ' kinds of grime. Pop one to add it to your collection.';
 }
 function openArmory(){ state = 'menu'; renderArmory(); only('scrArmory'); $('scrArmory').scrollTop = 0; try { $('bArmoryBack').focus({ preventScroll: true }); } catch (e) {} }
 function renderShop(){
@@ -6437,6 +6753,8 @@ on('bPlay', openStages);
 on('bDucks', () => openDucks('title'));
 on('bArmory', openArmory);
 on('bArmoryBack', goTitle);
+on('bStats', openStats);
+on('bStatsBack', goTitle);
 on('bShop', () => { state = 'menu'; renderShop(); only('scrShop'); });
 on('bSettings', () => { state = 'menu'; renderSettings($('setList'), false); only('scrSettings'); });
 on('bDucksBack', () => { if (duckFrom === 'stages') openStages(); else goTitle(); });
@@ -6444,6 +6762,7 @@ on('bStagesBack', goTitle); on('bShopBack', goTitle); on('bSetBack', goTitle);
 on('bStageChange', openStages);
 on('bStart', startRun);
 on('bNext', () => { const n = STAGES[ST.idx + 1]; if (n && n.idx <= SAVE.stageMax){ SAVE.stage = n.idx; persist(); } startRun(); });
+on('bMedalWear', () => { SAVE.cosm.wear = !SAVE.cosm.wear; persist(); renderDucks(); });
 on('heatDown', () => { SAVE.heat = Math.max(0, SAVE.heat - 1); persist(); renderDucks(); });
 on('heatUp', () => { SAVE.heat = Math.min(SAVE.maxHeat, SAVE.heat + 1); persist(); renderDucks(); });
 on('pauseBtn', pauseGame);
@@ -6545,7 +6864,12 @@ window.__duckDefense = {
   stagesCleared, weaponUnlocked, passiveUnlocked, NEW_WEAPONS, NEW_PASSIVES, openArmory, renderArmory, render: t => render(t), decoys, bbombs, plungers,
   clearBuild(){ run.weapons.length = 0; run.passives = {}; run.passOrder.length = 0; recalc(); buildSlots(); },
   music: { Snd, MUS_TRACKS, MusicEngine, musCompile, musicKey, render: (k, secs, o) => Snd.renderPreview(k, secs, o) },
-  BPAT, ATK, DBG, ename, drawEnemyShape, drawDuck, getPats, getSpr, buildSprites, stageTypes, hurtEnemy, killEnemy, RUN_BOSSES
+  BPAT, ATK, DBG, ename, drawEnemyShape, drawDuck, getPats, getSpr, buildSprites, stageTypes, hurtEnemy, killEnemy, RUN_BOSSES,
+  // rewards
+  METER_XP, MEDAL_T, COMBO_TIERS, BOSS_MIN_GAP, UNTOUCH, comboMul, medalFor, timeBonusPct, chestUseful, hurtPlayer, goldCount,
+  reloadSave(){ SAVE = loadSave(); return SAVE; }, persist, migrateSave, defaultSave, mergeInto,
+  get resumeCD(){ return resumeCD; },
+  openStats, renderStats, beastGroups, killCount
 };
 
 makePatterns();
