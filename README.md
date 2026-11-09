@@ -6,7 +6,7 @@ A rubber-duck arena survivor roguelite: the grime apocalypse has arrived, and on
 
 ## Play
 
-Play it at **https://thurbohnek.github.io/Duck-Defence/** or open `index.html` in any modern browser. Everything (graphics, sound, music) is in this single file — no build step, no dependencies.
+Play it at **https://thurbohnek.github.io/Quackpocalypse/** or open `index.html` in any modern browser. Everything (graphics, sound, music) is in this single file — no build step, no dependencies.
 
 ## Controls
 
