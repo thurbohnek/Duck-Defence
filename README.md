@@ -17,9 +17,9 @@ Play it at **https://thurbohnek.github.io/Duck-Defence/** or open `index.html` i
 
 - 10 stages, each with its own hazard, new enemies and final boss: The Bathtub, Kitchen Sink, Swimming Pool, Laundry Room, Garden Pond, Hot Spring, Tide Pool, Frozen Lake, The Sewer and the Grime Factory finale
 
-- 8 weapons, each with 5 levels and an evolution
-- 9 passive items
-- 7 enemy types and 4 bosses
+- 16 weapons, each with 5 levels and an evolution (8 unlocked by clearing stages, see the Armory)
+- 13 passive items
+- 40 bosses (4 per stage) and dozens of enemy types
 - 9 unlockable ducks with their own starting weapon and traits
 - Permanent upgrades bought with rubber chips
 - Water Temperature difficulty levels after your first win
