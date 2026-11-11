@@ -50,7 +50,6 @@ button:focus-visible,[tabindex]:focus-visible{outline:3px dashed #fff;outline-of
 #bmlabel{font-size:10px;line-height:11px;font-weight:900;letter-spacing:.06em;color:#fff;text-align:center;white-space:nowrap;text-shadow:0 1px 0 var(--ink),0 -1px 0 var(--ink),1px 0 0 var(--ink),-1px 0 0 var(--ink)}
 .bm{position:relative;height:9px;border:2px solid var(--ink);border-radius:6px;background:#3b2348;overflow:hidden}
 .bm i{position:absolute;left:0;top:0;bottom:0;width:100%;transform:scaleX(0);transform-origin:0 50%;will-change:transform}
-#bmtime{background:rgba(255,255,255,.38)}
 #bmfill{background:#ff9f43}
 #bmeter.full #bmfill{background:#ff5a5f}
 #bmeter.full #bmlabel{color:#ffd9e0}
@@ -325,7 +324,7 @@ h1,h2,h3{margin:0}
       </div>
       <div class="tcol">
         <div id="timer" class="display">0:00</div>
-        <div id="bmeter" aria-hidden="true"><span id="bmlabel">NEXT BOSS</span><div class="bm"><i id="bmtime"></i><i id="bmfill"></i></div></div>
+        <div id="bmeter" aria-hidden="true"><span id="bmlabel">NEXT BOSS</span><div class="bm"><i id="bmfill"></i></div></div>
       </div>
       <div class="hudright">
         <div class="killc"><i></i><span id="kills">0</span></div>
@@ -526,9 +525,9 @@ h1,h2,h3{margin:0}
    own starting weapon + traits, unlocked by achievements. Water Temperature
    (heat 0-5) unlocked by winning: tougher grime, more chips.
 
-   Stages: 10 worlds (STAGES). Each is a 12-minute run with bosses at
-   3/6/9/12 min; the 12:00 boss is the stage's own final boss and killing
-   it clears the stage and unlocks the next one. Every stage has its own
+   Stages: 10 worlds (STAGES). Each run has 3 mid-bosses then the stage's
+   own final boss (brought by the damage meter); popping it (and any
+   boss still up) clears the stage and unlocks the next one. Every stage has its own
    look (palette, water/floor/rim patterns, decor), 2 new grime types
    mixed with hue-shifted old ones, a signature hazard (run.mod flags:
    grease, spray, ropes, deep, vortex, pads, warm, steam, tide, ice,
@@ -540,9 +539,13 @@ h1,h2,h3{margin:0}
    Hot Spring(Geyser), Tide Pool(Captain Tentacles), Frozen Lake(Snow
    Globe), Sewer(Gator Below), Grime Factory(Grime Machine, 3 phases).
 
-   Rewards for good play: a boss meter (kill XP) brings bosses early (never
-   later than the timer, >= 2:00 apart; the director ramps on "effective
-   time" run.et / run.dtime), combo XP multiplier, Speedy / No-hit boss chips, speed
+   Bosses come by damage: every hit the duck deals fills the boss meter and
+   a full meter brings the next boss (no timer, no gaps; ignored bosses
+   stack up). The run is won when the final boss and every other boss
+   still up are popped. The director ramps on "effective time" run.et /
+   run.dtime (boss progress). Boss bodies knock back / shove face-tankers,
+   bosses resist stun-locks, final bosses enrage below 30% HP.
+   Rewards for good play: combo XP multiplier, Speedy / No-hit boss chips, speed
    and Untouchable chip bonuses, per-stage medals (bronze/silver/gold;
    gold on all 10 = Champion Medal cosmetic). Stats screen: lifetime
    totals + a per-stage grime bestiary (kill counts per type).
@@ -578,29 +581,32 @@ const INK = '#1f3350';
 const WORLD = { w: 2400, h: 1700 };
 const STEP = 1 / 60;
 const MAX_ENEMIES = 340, MAX_PROJ = 700, MAX_EPROJ = 260, MAX_PARTS = 360, MAX_NUMS = 40, MAX_PICKUPS = 420;
-const RUN_BOSSES = [
-  { t: 180, id: 'megasponge' },
-  { t: 360, id: 'drain' },
-  { t: 540, id: 'bigfizz' },
-  { t: 720, id: 'king' }
-];
-// --- rewards for playing well ---
-// Boss meter: kill XP fills it; when full the next boss comes early. The timer above stays the latest a boss can
-// arrive, the first boss never comes before 2:00 and there are always at least 2:00 between bosses.
-const BOSS_MIN_GAP = 120;
-const ET_DIFF = 0.7;                          // share of the boss-phase lead that the difficulty ramp follows
-const METER_XP = [700, 600, 1400, 2400];      // kill XP (enemy XP, not damage) that fills the meter, per boss
-function meterNeed(k){ return METER_XP[k] * (ST.idx === 0 ? 0.8 : 1 + 0.03 * ST.idx); }   // later stages drop a bit more XP
+// --- boss meter: damage brings the bosses ---
+// Every point of damage the duck deals fills the meter; when it is full the next boss arrives (4 s warning). There is
+// no timer and no minimum gap: ignore a boss and keep popping grime and the next one joins it, so bosses can stack.
+// Damage to grime fills by DMG_NEED (in base-HP units, see meterNeed); popping a whole boss fills BOSS_FILL of
+// the meter however much HP it had, so beating bosses fast is the quick way to the next one. Only damage fills it.
+const BOSS_SLOT = 180;                        // "effective time" per boss for the difficulty ramp (old 3/6/9/12 min slots)
+const ET_DIFF = 0.7;                          // share of a lead over the clock that the difficulty ramp follows
+const ET_SLOW = 0.5;                          // share of a lag behind the clock that it follows (slow players get slack)
+const DMG_NEED = [6000, 21000, 36000, 50000];  // grime damage that fills the meter, per boss, in base-HP units (see meterNeed)
+const BOSS_FILL = 0.5;                        // share of the meter one whole boss fills
+// grime damage counts in base-HP units: divided by the grime HP multiplier of the moment (time, stage, water heat), so
+// tougher grime or a later stage doesn't fill the meter faster, and an early boss doesn't snowball into the next
+function meterNeed(k){ return DMG_NEED[Math.min(k, 3)] * run.hpK; }
+// face-tanking a boss: bodies partly ignore armor, knock the duck back, and shove (telegraphed) if it stays inside
+const BOSS_CONTACT = 0.5;                     // share of the duck's armor that boss bodies ignore
+const BOSS_STUN_CD = 3;                       // after a stun wears off a boss shrugs off new stuns for this long
 const COMBO_WIN = 1.75;                       // seconds without a pop before the combo drops
 const COMBO_TIERS = [[30, 1.1], [100, 1.2], [250, 1.3], [500, 1.4], [1000, 1.5]];   // [combo, pearl XP multiplier]
-const MEDAL_T = { silver: 630, gold: 570 };    // clear times (final boss popped) for silver / gold
+const MEDAL_T = { silver: 600, gold: 480 };    // clear times (final boss and every other boss popped) for silver / gold
 const MEDAL_NAMES = ['', 'Bronze', 'Silver', 'Gold'];
-const BOSS_BONUS = [10, 15, 20, 30];
-const SPEEDY_PAR = [40, 45, 30, 45];            // "Speedy!": boss popped within this many seconds (x1.04 per stage, tougher bosses)           // chips for a Speedy or No-hit boss pop (3 mid-bosses, final boss)
+const BOSS_BONUS = [10, 15, 20, 30];           // chips for a Speedy or No-hit boss pop (3 mid-bosses, final boss)
+const SPEEDY_PAR = [40, 45, 30, 45];           // "Speedy!": boss popped within this many seconds (x1.04 per stage, tougher bosses)
 const UNTOUCH = [[5, 25, 'Untouchable'], [15, 10, 'Barely Scratched']];   // [max hits, chip bonus %, name], cleared runs
 function comboMul(c){ let m = 1; for (const t of COMBO_TIERS) if (c >= t[0]) m = t[1]; return m; }
 function medalFor(t){ return t <= MEDAL_T.gold ? 3 : t <= MEDAL_T.silver ? 2 : 1; }
-function timeBonusPct(t){ return Math.round(clamp((720 - t) / 60 * 10, 0, 40)); }
+function timeBonusPct(t){ return Math.round(clamp((660 - t) / 60 * 10, 0, 40)); }   // +10% per minute under 11:00, max 40% (6:20)
 
 /* ------------------------------ SAVE ------------------------------ */
 const SAVE_KEY = 'duckDefense.v1';
@@ -2801,7 +2807,7 @@ function newRun(duckId){
     dmgBy: {}, heat: SAVE.heat, won: false, over: false, evolvedCount: 0,
     hintStage: 0, moved: 0, hintT: 0, firstPearl: false, overtime: 0, chests: 0, levelFlash: 0,
     elitesKilled: 0, tookDamage: 0, stage: ST.idx, trueWin: false,
-    et: 0, dtime: 0, meter: 0, phaseStart: 0, phaseEt0: 0, bossDue: 0, bossTimes: [], bossLive: false, phaseXp: [0, 0, 0, 0],
+    et: 0, dtime: 0, meter: 0, phaseStart: 0, bossDue: 0, bossTimes: [], bossLive: false, bossAlive: 0, finalDead: false, hpK: 1, phaseDmg: [0, 0, 0, 0], fillBoss: [0, 0, 0, 0],
     killsBy: {}, hits: 0, combo: 0, comboT: 0, comboBest: 0, speedy: 0, nohit: 0, bossBonus: 0, bossLog: [],
     mod: {}, pmul: 1, pushX: 0, pushY: 0, yank: null, bossPull: null, darkK: 0, hz: {}, sprays: [], tideY: WORLD.h, vortex: null, rot: -1
   };
@@ -2996,45 +3002,48 @@ function addFresh(w, t, m){
     w.push([k, (i ? 0.7 + m * 0.18 : 0.9 + m * 0.2) / Math.sqrt(grp)]);
   }
 }
-// "effective time": what the spawn director, enemy scaling and hazards see. It equals the real clock unless the
-// boss meter runs ahead; then it moves through the current boss phase as fast as the meter, so an early 9:00 boss
-// still comes with 9:00-level grime around it.
+// "effective time": what the spawn director, enemy scaling and hazards see. It moves through the old 3-minute boss
+// slots as the boss meter fills (boss k arrives at k x 3:00 effective time), so an early boss still comes with
+// fitting grime around it. After the final boss arrives it runs on with the clock.
 function updateEt(){
-  const nb = RUN_BOSSES[run.bossIdx], since = run.time - run.phaseStart;
-  let e;
-  if (nb){
-    const span = nb.t - run.phaseEt0, real = Math.max(1, nb.t - run.phaseStart);
-    const p = Math.min(1, Math.max(since / real, run.meter * Math.min(1, since / BOSS_MIN_GAP)));
-    e = run.phaseEt0 + span * p;
-  } else e = run.phaseEt0 + since;
+  const e = run.bossIdx < 4 ? BOSS_SLOT * (run.bossIdx + Math.min(1, run.meter)) : BOSS_SLOT * 4 + (run.time - run.phaseStart);
   if (e > run.et) run.et = e;
-  // difficulty follows the boss phase most of the way, so an early boss still meets fitting grime, but a fast
-  // player who has had less time to level up gets a little slack
-  run.dtime = run.time + ET_DIFF * (run.et - run.time);
+  // difficulty follows boss progress most of the way: a fast player (ahead of the clock) gets a little slack to
+  // level up, a slow one (behind the clock) still feels the clock a bit
+  const d = run.et - run.time;
+  run.dtime = run.time + (d > 0 ? ET_DIFF : ET_SLOW) * d;
+}
+// the boss meter: every point of damage the duck deals (hurtEnemy) brings the next boss closer
+function meterDmg(e, d){
+  if (run.bossIdx >= 4 || run.bossDue || run.won || !(d > 0)) return;
+  // while bosses are up, grime counts less (1 boss: 2/3, 2: 1/2 ...): fighting the boss is the fast way on
+  const f = e.boss ? d / e.maxhp * BOSS_FILL : d / meterNeed(run.bossIdx) / (1 + 0.5 * run.bossAlive);
+  run.phaseDmg[run.bossIdx] += d; run.fillBoss[run.bossIdx] += e.boss ? f : 0;
+  run.meter = Math.min(1, run.meter + f);
 }
 function director(dt){
   const t = run.dtime, h = run.heat;
-  // boss schedule: the timer (RUN_BOSSES) is the latest a boss arrives; a full boss meter brings it earlier
-  const nb = RUN_BOSSES[run.bossIdx];
-  if (nb){
+  run.hpK = diffMul().hp;
+  // boss schedule: a full meter brings the next boss after a 4 s warning; nothing else does (no timer, no gaps)
+  if (run.bossIdx < 4){
     const id = run.bossIdx < 3 ? ST.mids[run.bossIdx] : ST.final, now = run.time;
-    if (!run.bossDue && run.meter >= 1) run.bossDue = Math.min(nb.t, Math.max(run.phaseStart + BOSS_MIN_GAP, now + 4));
-    const due = run.bossDue ? Math.min(run.bossDue, nb.t) : nb.t;
-    if (now >= due - 4 && run.bossWarned !== run.bossIdx){
-      run.bossWarned = run.bossIdx; Snd.play('warn');
-      showBanner(ename(id), id === ST.final ? 'The final boss approaches!' : due < nb.t - 1 ? 'is coming early!' : 'is coming!', true);
+    if (!run.bossDue && run.meter >= 1){
+      run.bossDue = now + 4; run.bossWarned = run.bossIdx; Snd.play('warn');
+      showBanner(ename(id), id === ST.final ? 'The final boss approaches!' : run.bossAlive ? 'joins the fight!' : 'is coming!', true);
     }
-    if (now >= due){
-      spawnBoss(id); run.bossTimes.push(now);
-      run.phaseStart = now; run.phaseEt0 = nb.t; if (run.et < nb.t) run.et = nb.t;
-      run.dtime = run.time + ET_DIFF * (run.et - run.time);
+    if (run.bossDue && now >= run.bossDue){
+      spawnBoss(id, run.bossIdx); run.bossTimes.push(now);
+      run.phaseStart = now; const slot = BOSS_SLOT * (run.bossIdx + 1); if (run.et < slot) run.et = slot;
+      run.dtime = run.time + ET_DIFF * Math.max(0, run.et - run.time);
       run.meter = 0; run.bossDue = 0; run.bossIdx++;
     }
   }
-  const bossAlive = run.bosses.some(b => !b.dead);
-  run.bossLive = bossAlive;
+  let alive = 0; for (const b of run.bosses) if (!b.dead) alive++;
+  const bossAlive = alive > 0;
+  run.bossLive = bossAlive; run.bossAlive = alive;
   let rate = (0.9 + t * 0.02 + Math.max(0, t - 360) * 0.012) * (1 + 0.12 * h) * ST.mul.rate;
-  if (t > 720) rate *= 1 + (t - 720) / 60 * 0.6;
+  if (t > 720 && run.bossIdx >= 4) rate *= 1 + (t - 720) / 60 * 0.6;
+  if (alive > 1) rate *= 1 / (1 + 0.35 * (alive - 1));   // stacked bosses: a little less grime around them
   // once the first boss has arrived the tub keeps a calmer pace. (The original game got this pacing
   // by accident: dead bosses stayed in run.bosses and were recycled, so "boss alive" was nearly always true.)
   const paced = bossAlive || run.bossIdx > 0;
@@ -3081,13 +3090,15 @@ function director(dt){
     }
   }
 }
-function spawnBoss(id){
+function spawnBoss(id, bi){
   const [x, y] = spawnPos(-60);
+  if (bi === undefined) bi = id === ST.final ? 3 : Math.max(0, ST.mids.indexOf(id));
   const mid = id !== ST.final && !OLD_TYPES[id];
   const e = spawnEnemy(id, x, y, { force: true, mid, hpMul: mid && !ETYPES[id].mb ? (ST.midHp ? ST.midHp[Math.max(0, ST.mids.indexOf(id))] : 0.3) : 1 });
   if (!e) return;
   e.spawnT = 0.9; e.state = 0; e.t = 2.5;
   e.bornT = run.time; e.hits0 = run.hits;
+  e.bi = bi; e.touchT = 0; e.shoveCD = 0; e.stunCD = 0; e.enraged = false;
   run.bosses.push(e);
   Snd.play('roar'); addShake(8);
   const esc = id === 'king' ? 'loofah' : id === ST.final ? ST.escort : null;
@@ -3102,7 +3113,9 @@ function hurtEnemy(e, dmg, src, kx, ky, kb, noCrit){
   if (e.air) return 0;
   e.hp -= dmg; e.flash = 0.1; e.squash = 0.25;
   if (kb && e.kbm > 0){ e.kx += kx * kb * e.kbm; e.ky += ky * kb * e.kbm; }
-  run.dmgBy[src] = (run.dmgBy[src] || 0) + Math.min(dmg, dmg + e.hp);
+  const eff = Math.min(dmg, dmg + e.hp);
+  run.dmgBy[src] = (run.dmgBy[src] || 0) + eff;
+  if (src !== 'hazard') meterDmg(e, eff);
   dmgNum(e.x, e.y - e.r * 0.6, dmg, crit);
   if (e.hp <= 0) killEnemy(e, src);
   else if (Math.random() < 0.35) Snd.play('hit');
@@ -3119,9 +3132,8 @@ function killEnemy(e, src){
   if (e.boss){
     bossDeath(e); return;
   }
-  // combo (quick pops in a row) multiplies pearl XP; kill XP also fills the boss meter
+  // combo (quick pops in a row) multiplies pearl XP
   run.combo++; run.comboT = COMBO_WIN; if (run.combo > run.comboBest) run.comboBest = run.combo;
-  if (run.bossIdx < 4){ run.phaseXp[run.bossIdx] += e.xp; if (!run.bossDue && !run.bossLive) run.meter = Math.min(1, run.meter + e.xp / meterNeed(run.bossIdx)); }
   let xp = e.xp * comboMul(run.combo);
   if (xp >= 20) { dropPickup('pearl', e.x, e.y, Math.round(xp * 0.6)); dropPickup('pearl', e.x, e.y, Math.round(xp * 0.4)); }
   else dropPickup('pearl', e.x, e.y, xp);
@@ -3166,32 +3178,38 @@ function bossDeath(e){
   for (let i = 0; i < 12 && total > 0; i++){ const p = dropPickup('pearl', e.x, e.y, Math.ceil(total / 12)); if (p){ const a = i / 12 * TAU; p.vx = Math.cos(a) * 260; p.vy = Math.sin(a) * 260; } }
   for (let i = 0; i < 6; i++) dropPickup('chip', e.x, e.y, 4);
   // fast pop and no-hit bonuses (chips straight into the run's haul)
-  const bi = e.type === ST.final ? 3 : clamp(ST.mids.indexOf(e.type), 0, 2);
+  const bi = e.bi !== undefined ? e.bi : e.type === ST.final ? 3 : clamp(ST.mids.indexOf(e.type), 0, 2);
   const fight = run.time - (e.bornT || 0), par = SPEEDY_PAR[bi] * (1 + 0.04 * ST.idx) * (1 + 0.35 * run.heat);   // boss HP grows with stage and water heat
   const fast = fight <= par, clean = run.hits === e.hits0;
   let bonus = 0; if (fast){ run.speedy++; bonus += BOSS_BONUS[bi]; } if (clean){ run.nohit++; bonus += BOSS_BONUS[bi]; }
   run.bossLog.push({ id: e.type, t: Math.round(fight * 10) / 10, par: Math.round(par), fast, clean });
   const tag = fast && clean ? 'Speedy & No-hit!' : fast ? 'Speedy!' : clean ? 'No-hit!' : '';
   if (bonus){ run.chipsFound += bonus; run.bossBonus += bonus; rewardText(tag + ' +' + bonus + ' chips'); Snd.play('chip'); }
-  if (e.type === ST.final){
-    // clear the arena: everything pops
+  const isFinal = e.type === ST.final; if (isFinal) run.finalDead = true;
+  const others = run.bosses.some(b => b !== e && !b.dead);
+  if (run.finalDead && !others){
+    // the final boss and every other boss are down: clear the arena, everything pops
     for (const o of elist) if (!o.dead && o !== e){ o.dead = true; burst(o.x, o.y, 4, DEATH_COL[o.type] || ETYPES[o.type].col || '#fff', 140, 5, 0.4); run.kills++; run.killsBy[o.type] = (run.killsBy[o.type] | 0) + 1; }
     eplist.length = 0; strikes.length = 0; run.sprays.length = 0; run.yank = null; run.bossPull = null;
     run.won = true;
     run.winT = 2.2;
     run.trueWin = ST.idx === STAGES.length - 1;
-    showBanner(run.trueWin ? 'Grime-Free!' : 'Squeaky Clean!', ename(e.type) + ' is defeated!', false);
+    showBanner(run.trueWin ? 'Grime-Free!' : 'Squeaky Clean!', (isFinal ? ename(e.type) : 'The last boss') + ' is defeated!', false);
+  } else if (isFinal){
+    // the final boss went down first: the stage is cleared once the bosses still around are popped too
+    dropPickup('heal', e.x, e.y, 1);
+    showBanner(tag || 'Final Boss Popped!', 'Defeat the remaining bosses!', true);
   } else {
     const c = dropPickup('chest', e.x, e.y, ETYPES[e.type].chest || 3);
     if (c){ c.boss = true; c.vx = 0; c.vy = 0; }
-    showBanner(tag || 'Boss Popped!', bonus ? '+' + bonus + ' chips · grab the chest' : 'Grab the treasure chest', false);
+    showBanner(tag || 'Boss Popped!', run.finalDead ? 'Defeat the remaining bosses!' : bonus ? '+' + bonus + ' chips · grab the chest' : 'Grab the treasure chest', run.finalDead);
   }
 }
 
-function hurtPlayer(d, src){
-  if (player.inv > 0 || !player.alive || run.won) return;
-  if (spongeBlock()) return;
-  d = Math.max(1, (d - player.armor) * player.dmgTaken);
+function hurtPlayer(d, src, pierce){
+  if (player.inv > 0 || !player.alive || run.won) return false;
+  if (spongeBlock()) return false;
+  d = Math.max(1, (d - player.armor * (1 - (pierce || 0))) * player.dmgTaken);
   if (DBG.on && src) DBG.hurt[src] = (DBG.hurt[src] || 0) + d;
   player.hp -= d; player.inv = player.invHit; player.hurtT = 0.3; player.squash = 0.4;
   run.tookDamage += d; run.hits++;
@@ -3212,6 +3230,7 @@ function hurtPlayer(d, src){
       burst(player.x, player.y, 30, '#ffd23f', 260, 8, 0.9);
     }
   }
+  return true;
 }
 
 function updateEnemies(dt){
@@ -3226,7 +3245,8 @@ function updateEnemies(dt){
     // knockback velocity
     e.x += e.kx * dt; e.y += e.ky * dt;
     const kd = Math.pow(0.0015, dt); e.kx *= kd; e.ky *= kd;
-    if (e.stun > 0){ e.stun -= dt; continue; }
+    if (e.stun > 0){ e.stun -= dt; if (e.boss){ if (e.stun <= 0) e.stunCD = BOSS_STUN_CD; bossTouch(e, dt, px, py, pr); } continue; }
+    if (e.stunCD > 0) e.stunCD -= dt;
     let tx = px, ty = py;
     if (decoys.length && !e.boss){ // Rubber Duck Decoy: grime within the lure radius chases the decoy instead
       let bd = 1e12;
@@ -3520,12 +3540,38 @@ function updateEnemies(dt){
         const ux = Math.cos(e.ang), uy = Math.sin(e.ang), L = e.r * 1.5; const along = clamp(cx * ux + cy * uy, -L, L);
         cx -= ux * along; cy -= uy * along; rr = e.r * 0.55 + pr * 0.75;
       }
-      if (cx * cx + cy * cy < rr * rr){
+      if (e.boss) bossTouch(e, dt, px, py, pr);
+      else if (cx * cx + cy * cy < rr * rr){
         if (e.type === 'fizzer' && e.state === 0){ e.state = 2; e.t = 0.5; }
         hurtPlayer(e.dmg, e.type);
       }
-    }
+    } else if (e.boss) e.touchT = 0;
   }
+}
+// boss bodies: a bump (same damage as before, but it ignores part of the armor) knocks the duck back, and a duck
+// that stays inside the body for 0.75 s gets a telegraphed shove (ring around the boss, then a push out)
+function bossTouch(e, dt, px, py, pr){
+  if (e.air || e.hop || e.spawnT > 0){ e.touchT = 0; return; }
+  if (e.shoveCD > 0) e.shoveCD -= dt;
+  const cx = px - e.x, cy = py - e.y, rr = e.r + pr * 0.75, d2 = cx * cx + cy * cy;
+  if (d2 >= rr * rr){ e.touchT = Math.max(0, e.touchT - dt * 2); return; }
+  const d = Math.sqrt(d2) || 1, ux = d > 1 ? cx / d : Math.cos(e.wob), uy = d > 1 ? cy / d : Math.sin(e.wob);
+  if (hurtPlayer(e.dmg, e.type, BOSS_CONTACT)){
+    if (!run.yank) run.yank = { x: player.x + ux * 400, y: player.y + uy * 400, t: 0.14, stop: 0 };
+  }
+  e.touchT += dt;
+  if (e.touchT > 0.75 && e.shoveCD <= 0 && player.alive){
+    e.touchT = 0; e.shoveCD = 2.2; Snd.play('warn');
+    const uid = e.uid;
+    strike({ k: 'c', e, x: e.x, y: e.y, r: e.r + 70, delay: 0.45, dmg: e.dmg * 0.5, pierce: BOSS_CONTACT, col: '255,90,95',
+      onHit: () => { if (e.uid !== uid || e.dead) return; let ddx = player.x - e.x, ddy = player.y - e.y; if (ddx * ddx + ddy * ddy < 1){ ddx = Math.cos(e.wob); ddy = Math.sin(e.wob); } const dd = Math.hypot(ddx, ddy); run.yank = { x: player.x + ddx / dd * 600, y: player.y + ddy / dd * 600, t: 0.26, stop: 0 }; addShake(5); } });
+  }
+}
+// stuns: bosses only take a short one and then shrug stuns off for a few seconds (no stun-locking a boss)
+function stunE(e, s){
+  if (!e.boss){ e.stun = Math.max(e.stun, s); return; }
+  if (e.stunCD > 0 || e.stun > 0) return;
+  e.stun = s * 0.5;
 }
 
 /* ------------------------------ BOSS AI ------------------------------ */
@@ -3633,6 +3679,11 @@ function stageBossAI(e, dt, dx, dy, d, hpf, D){
     if (!e.mid) minions(BESC[e.type], 3 + p, e.x, e.y, 150, { force: true, elite: p >= 2 });
   }
   e.msp = e.spd * (1 + e.phase * 0.15);
+  // final bosses enrage below 30% HP: they move a bit faster and rest half as long between (telegraphed) attacks
+  if (e.type === ST.final && hpf < 0.3){
+    if (!e.enraged){ e.enraged = true; Snd.play('roar'); addShake(6); if (e.type !== 'engine') showBanner(ename(e.type) + ' is ENRAGED!', '', true); }
+    e.msp *= 1.2; if (e.cur === 'rest') e.t -= dt;
+  }
   if (ETYPES[e.type].mb && d > 300) e.msp *= 1 + Math.min(1.2, (d - 300) / 250);   // mid-bosses close the gap when you keep far away
   if (e.jmp){ if (bossJumpStep(e, dt)) bossLand(e, D); return; }
   if (e.cur) { e.at += dt; atkUpdate(e, dt, dx, dy, d, D); }
@@ -4143,12 +4194,12 @@ function updateStrikes(dt){
   let j = 0;
   for (let i = 0; i < strikes.length; i++){
     const o = strikes[i];
-    if (o.dead) continue;
+    if (!o || o.dead) continue;   // (a boss popped mid-loop can clear the list)
     if (o.e){ if (o.e.dead){ continue; } o.x = o.e.x; o.y = o.e.y; }
     o.t += dt;
     if (!o.fired && o.t >= o.delay){
       o.fired = true;
-      if (player.alive && !run.won && o.dmg && inStrike(o, player.x, player.y, player.r * 0.55)){ hurtPlayer(o.dmg, 'strike' + o.k + ':' + (o.col || '')); if (o.onHit) o.onHit(o); }
+      if (player.alive && !run.won && o.dmg && inStrike(o, player.x, player.y, player.r * 0.55)){ hurtPlayer(o.dmg, 'strike' + o.k + ':' + (o.col || ''), o.pierce); if (o.onHit) o.onHit(o); }
       if (o.edmg && o.k === 'c'){ const cnt = query(o.x, o.y, o.r, Q2); const l = Q2.slice(0, cnt); for (const e of l) if (!e.boss) hurtEnemy(e, o.edmg * player.dmgMul, 'hazard', 0, 0, 0, true); }
       if (o.fxk === 'ice'){ burst(o.x, o.y, 9, '#e6f6ff', 200, 6, 0.45); Snd.play('hit'); }
       else if (o.fxk === 'steam'){ burst(o.x, o.y, 10, '#ffffff', 240, 9, 0.6); Snd.play('splash'); }
@@ -4159,7 +4210,7 @@ function updateStrikes(dt){
     if (o.t >= o.delay + o.linger) continue;
     strikes[j++] = o;
   }
-  strikes.length = j;
+  strikes.length = run.won ? 0 : j;
 }
 function pushOutObs(o, rad){
   for (let i = 0; i < OBS.length; i++){
@@ -4614,7 +4665,7 @@ function doShock(s, A, evo){
   const p = player; const R = s.rad * A;
   ringFx(p.x, p.y, 10, R, 0.32, evo ? '#ffc23a' : '#ffe08a', evo ? 9 : 6);
   const cnt = query(p.x, p.y, R, Q1);
-  for (let q = 0; q < cnt; q++){ const e = Q1[q]; const ka = Math.atan2(e.y - p.y, e.x - p.x); hurtEnemy(e, dmgOf(s.dmg), 'shock', Math.cos(ka), Math.sin(ka), s.kb); if (s.stun) e.stun = Math.max(e.stun, s.stun); }
+  for (let q = 0; q < cnt; q++){ const e = Q1[q]; const ka = Math.atan2(e.y - p.y, e.x - p.x); hurtEnemy(e, dmgOf(s.dmg), 'shock', Math.cos(ka), Math.sin(ka), s.kb); if (s.stun) stunE(e, s.stun); }
   // shockwaves also pop goo blobs
   for (const b of eplist){ if (Math.hypot(b.x - p.x, b.y - p.y) < R) b.dead = true; }
   p.squash = 0.35;
@@ -4848,7 +4899,7 @@ function updateBooms(dt){
     if (parts.length < partCap()) part(b.x, b.y, 0, 0, 0.18, b.rad * 0.9, '#ffffff', 2);
     Snd.play(b.src === 'mines' ? 'boom' : b.src === 'decoy' ? 'squeak' : 'splash'); if (b.src === 'fizz') addShake(1.5); else weaponShake(b.src === 'mines' ? 2.5 : 1.5);
     const cnt = query(b.x, b.y, b.rad, Q2); const list = Q2.slice(0, cnt);
-    for (const e of list){ const a = Math.atan2(e.y - b.y, e.x - b.x); hurtEnemy(e, b.src === 'fizz' ? b.dmg * player.dmgMul : b.dmg, b.src, Math.cos(a), Math.sin(a), 200, b.src === 'fizz'); if (b.stun) e.stun = Math.max(e.stun, b.stun); }
+    for (const e of list){ const a = Math.atan2(e.y - b.y, e.x - b.x); hurtEnemy(e, b.src === 'fizz' ? b.dmg * player.dmgMul : b.dmg, b.src, Math.cos(a), Math.sin(a), 200, b.src === 'fizz'); if (b.stun) stunE(e, b.stun); }
     if (b.hurtP && Math.hypot(player.x - b.x, player.y - b.y) < b.rad + player.r * 0.5) hurtPlayer(b.hurtP);
   }
   let j = 0; for (let i = 0; i < booms.length; i++) if (!booms[i].done) booms[j++] = booms[i]; booms.length = j;
@@ -6156,17 +6207,15 @@ function updateHUD(){
   setText('lvl', 'Lv ' + run.level);
   setText('timer', fmtTime(run.time));
   setText('kills', fmtNum(run.kills));
-  // boss meter: dim fill = the timer's progress to the next boss, orange = the kill meter (whichever is full first wins)
-  const nb = RUN_BOSSES[run.bossIdx], showM = !!nb && !run.bossLive && !run.won && player.alive;
+  // boss meter: damage progress to the next boss (it keeps filling while bosses are up, so they can stack)
+  const showM = run.bossIdx < 4 && !run.won && player.alive;
   if (hudCache.bmShow !== showM){ hudCache.bmShow = showM; $('bmeter').style.visibility = showM ? 'visible' : 'hidden'; }
   if (showM){
-    const since = run.time - run.phaseStart, real = Math.max(1, nb.t - run.phaseStart);
-    const due = run.bossDue ? Math.min(run.bossDue, nb.t) : nb.t, soon = run.time >= due - 4;
-    setWidth('bmtime', since / real); setWidth('bmfill', run.meter);
-    const st = soon ? 2 : run.bossDue ? 1 : 0;
+    setWidth('bmfill', run.meter);
+    const st = run.bossDue ? 2 : run.bossAlive > 1 ? 1 : 0;
     if (hudCache.bmSt !== st){ hudCache.bmSt = st; const m = $('bmeter'); m.classList.toggle('full', st > 0); m.classList.toggle('due', st === 2); }
-    setText('bmlabel', st === 2 ? 'INCOMING!' : st === 1 ? 'BOSS READY' : run.bossIdx === 3 ? 'FINAL BOSS' : 'NEXT BOSS');
-    if (!SAVE.seen.meter && run.hintStage >= 3 && hintTimer <= 0 && since > 12){ SAVE.seen.meter = 1; persist(); showHint('Pop grime fast to fill the boss meter. Full meter = early boss!', 5); }
+    setText('bmlabel', st === 2 ? 'INCOMING!' : st === 1 ? 'x' + run.bossAlive + ' BOSSES' : run.bossIdx === 3 ? 'FINAL BOSS' : 'NEXT BOSS');
+    if (!SAVE.seen.meter2 && run.hintStage >= 3 && hintTimer <= 0 && run.time > 12){ SAVE.seen.meter2 = 1; persist(); showHint('Every hit fills the boss meter. Deal more damage, meet bosses sooner!', 5); }
   }
   // combo: refreshed at most 10 times a second
   if (clock - (hudCache.comboAt || 0) > 0.1 || (run.combo < 10) !== !!hudCache.comboOff){
@@ -6180,9 +6229,12 @@ function updateHUD(){
       if (!SAVE.seen.combo && m > 1 && run.hintStage >= 3 && hintTimer <= 0){ SAVE.seen.combo = 1; persist(); showHint('Combo! Keep popping without a break for bonus XP.', 4); }
     }
   }
-  const boss = run.bosses.find(b => !b.dead);
+  // boss bar: the nearest boss, with a count when several are up
+  let boss = null, bd = 1e18, nb = 0;
+  for (const b of run.bosses){ if (b.dead) continue; nb++; const dx = b.x - player.x, dy = b.y - player.y, d2 = dx * dx + dy * dy; if (d2 < bd){ bd = d2; boss = b; } }
   if (boss){
-    if (hudCache.boss !== boss.uid){ hudCache.boss = boss.uid; $('bossbar').classList.remove('hidden'); $('bossname').textContent = ename(boss.type); }
+    const key = boss.uid + ':' + nb;
+    if (hudCache.boss !== key){ hudCache.boss = key; $('bossbar').classList.remove('hidden'); $('bossname').textContent = ename(boss.type) + (nb > 1 ? '  +' + (nb - 1) + ' more' : ''); }
     setWidth('bossfill', Math.max(0, boss.hp / boss.maxhp));
   } else if (hudCache.boss){ hudCache.boss = 0; $('bossbar').classList.add('hidden'); }
 }
@@ -6864,9 +6916,9 @@ window.__duckDefense = {
   stagesCleared, weaponUnlocked, passiveUnlocked, NEW_WEAPONS, NEW_PASSIVES, openArmory, renderArmory, render: t => render(t), decoys, bbombs, plungers,
   clearBuild(){ run.weapons.length = 0; run.passives = {}; run.passOrder.length = 0; recalc(); buildSlots(); },
   music: { Snd, MUS_TRACKS, MusicEngine, musCompile, musicKey, render: (k, secs, o) => Snd.renderPreview(k, secs, o) },
-  BPAT, ATK, DBG, ename, drawEnemyShape, drawDuck, getPats, getSpr, buildSprites, stageTypes, hurtEnemy, killEnemy, RUN_BOSSES,
+  BPAT, ATK, DBG, ename, drawEnemyShape, drawDuck, getPats, getSpr, buildSprites, stageTypes, hurtEnemy, killEnemy, BOSS_SLOT,
   // rewards
-  METER_XP, MEDAL_T, COMBO_TIERS, BOSS_MIN_GAP, UNTOUCH, comboMul, medalFor, timeBonusPct, chestUseful, hurtPlayer, goldCount,
+  DMG_NEED, BOSS_FILL, meterNeed, meterDmg, stunE, bossTouch, MEDAL_T, COMBO_TIERS, UNTOUCH, comboMul, medalFor, timeBonusPct, chestUseful, hurtPlayer, goldCount,
   reloadSave(){ SAVE = loadSave(); return SAVE; }, persist, migrateSave, defaultSave, mergeInto,
   get resumeCD(){ return resumeCD; },
   openStats, renderStats, beastGroups, killCount

@@ -15,7 +15,7 @@ Play it at **https://thurbohnek.github.io/Quackpocalypse/** or open `index.html`
 
 ## Features
 
-- Rewards for skill: boss meter (kill well and bosses come sooner), speed bonus, bronze/silver/gold medals per stage, Speedy and No-hit boss bonuses, Untouchable runs and an XP combo
+- Rewards for skill: damage-driven boss meter (deal damage and bosses come sooner; ignore them and they stack up), speed bonus, bronze/silver/gold medals per stage, Speedy and No-hit boss bonuses, Untouchable runs and an XP combo
 - Stats screen with a bestiary of every enemy and boss you have popped
 
 - 10 stages, each with its own hazard, new enemies and final boss: The Bathtub, Kitchen Sink, Swimming Pool, Laundry Room, Garden Pond, Hot Spring, Tide Pool, Frozen Lake, The Sewer and the Grime Factory finale
