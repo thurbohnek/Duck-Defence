@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#16748d">
+<meta name="theme-color" content="#0b1a2a">
+</head>
+<body>
 <title>Quackpocalypse</title>
 <!-- Quackpocalypse. Copyright (c) 2026 Ørjan Grane / Studio.grane. All rights reserved. Contact: studio.grane@gmail.com -->
 <meta name="author" content="Studio.grane">
@@ -310,8 +312,6 @@ h1,h2,h3{margin:0}
 }
 </style>
 
-</head>
-<body>
 <div id="app">
   <div id="game"><div id="waterL"><div id="waterT"></div></div><canvas id="cv" aria-label="Quackpocalypse game area"></canvas></div>
 
@@ -2922,7 +2922,8 @@ function diffMul(){
   // later stages start only a little tougher and ramp up to their full HP/damage bonus by 8 minutes
   const ramp = Math.min(1, t / 480), shp = 1 + (S.hp - 1) * (0.25 + 0.75 * ramp), sdm = 1 + (S.dmg - 1) * (0.3 + 0.7 * ramp);
   return {
-    hp: (1 + t / 60 * 0.2 + Math.pow(Math.max(0, t - 240) / 60, 1.5) * 0.3) * (1 + 0.3 * h) * shp,
+    // stage 1 creatures have 30 % less health (bosses are unchanged)
+    hp: (1 + t / 60 * 0.2 + Math.pow(Math.max(0, t - 240) / 60, 1.5) * 0.3) * (1 + 0.3 * h) * shp * (ST.idx === 0 ? 0.7 : 1),
     dmg: (1 + t / 600 * 0.9) * (1 + 0.15 * h) * sdm,
     spd: 1 + Math.min(0.25, t / 2400) + 0.03 * h + S.spd
   };
